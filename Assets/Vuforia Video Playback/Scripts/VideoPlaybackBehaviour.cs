@@ -42,6 +42,11 @@ public class VideoPlaybackBehaviour : MonoBehaviour
     /// </summary>
     public bool m_autoPlay = false;
 
+    /// <summary>
+    /// Play video from cloud
+    /// </summary>
+    public bool isCloudReco = false;
+
     #endregion // PUBLIC_MEMBER_VARIABLES
 
 
@@ -133,7 +138,7 @@ public class VideoPlaybackBehaviour : MonoBehaviour
         mIconPlane = transform.Find("Icon").gameObject;
 
         // A filename or url must be set in the inspector
-        if (m_path == null || m_path.Length == 0)
+        if (!isCloudReco && (m_path == null || m_path.Length == 0))
         {
             Debug.Log("Please set a video url in the Inspector");
             HandleStateChange(VideoPlayerHelper.MediaState.ERROR);
@@ -177,7 +182,7 @@ public class VideoPlaybackBehaviour : MonoBehaviour
             InitVideoTexture();
 
             // Load the video
-            if (mVideoPlayer.Load(m_path, mMediaType, false, 0) == false)
+            if (!isCloudReco && mVideoPlayer.Load(m_path, mMediaType, false, 0) == false)
             {
                 Debug.Log("Could not load video '" + m_path + "' for media type " + mMediaType);
                 HandleStateChange(VideoPlayerHelper.MediaState.ERROR);
@@ -208,23 +213,8 @@ public class VideoPlaybackBehaviour : MonoBehaviour
 
                 if (isPlayableOnTexture)
                 {
-                    // Pass the video texture id to the video player
-                    // TODO: GetNativeTextureID() call needs to be moved to Awake method to work with Oculus SDK if MT rendering is enabled
-                    int nativeTextureID = mVideoTexture.GetNativeTextureID();
-                    mVideoPlayer.SetVideoTextureID(nativeTextureID);
-
-                    // Get the video width and height
-                    int videoWidth = mVideoPlayer.GetVideoWidth();
-                    int videoHeight = mVideoPlayer.GetVideoHeight();
-
-                    if (videoWidth > 0 && videoHeight > 0)
-                    {
-                        // Scale the video plane to match the video aspect ratio
-                        float aspect = videoHeight / (float) videoWidth;
-
-                        // Flip the plane as the video texture is mirrored on the horizontal
-                        transform.localScale = new Vector3(-0.1f, 0.1f, 0.1f * aspect);
-                    }
+                    //Set texture and aspect ratio
+                    SetVideoTextureAndAspectRatio();
 
                     // Seek ahead if necessary
                     if (mSeekPosition > 0)
@@ -363,6 +353,8 @@ public class VideoPlaybackBehaviour : MonoBehaviour
         if (newState == VideoPlayerHelper.MediaState.PLAYING ||
             newState == VideoPlayerHelper.MediaState.PAUSED)
         {
+            InitVideoTexture();
+            SetVideoTextureAndAspectRatio();
             Material mat = GetComponent<Renderer>().material;
             mat.mainTexture = mVideoTexture;
             mat.mainTextureScale = new Vector2(1, 1);
@@ -484,4 +476,27 @@ public class VideoPlaybackBehaviour : MonoBehaviour
     }
 
     #endregion // PRIVATE_METHODS
+
+    // Custom methods
+
+    private void SetVideoTextureAndAspectRatio()
+    {
+        // Pass the video texture id to the video player
+        // TODO: GetNativeTextureID() call needs to be moved to Awake method to work with Oculus SDK if MT rendering is enabled
+        int nativeTextureID = mVideoTexture.GetNativeTextureID();
+        mVideoPlayer.SetVideoTextureID(nativeTextureID);
+
+        // Get the video width and height
+        int videoWidth = mVideoPlayer.GetVideoWidth();
+        int videoHeight = mVideoPlayer.GetVideoHeight();
+
+        if (videoWidth > 0 && videoHeight > 0)
+        {
+            // Scale the video plane to match the video aspect ratio
+            float aspect = videoHeight / (float)videoWidth;
+
+            // Flip the plane as the video texture is mirrored on the horizontal
+            transform.localScale = new Vector3(-0.1f, 0.1f, 0.1f * aspect);
+        }
+    }
 }

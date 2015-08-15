@@ -22,7 +22,7 @@ namespace AssemblyCSharp
         #region PRIVATE_MEMBER_VARIABLES
 
         private TrackableBehaviour mTrackableBehaviour;
-        private VideoPlayBackCloudRecoBehaviour video;
+        private VideoPlaybackBehaviour video;
 
         private bool mHasBeenFound = false;
         private bool mLostTracking;
@@ -86,7 +86,7 @@ if (child.name == "MyModel") mMyModel = child;
                 mTrackableBehaviour.RegisterTrackableEventHandler(this);
             }
 
-            video = GetComponentInChildren<VideoPlayBackCloudRecoBehaviour>();
+            video = GetComponentInChildren<VideoPlaybackBehaviour>();
 
             OnTrackingLost();
         }
@@ -326,7 +326,7 @@ mMyModel.Rotate(0.0f, -0.2666f, 0.0f);
             //			video.InitializeVideoPlayback ();
             if (video != null)
             {
-                video = GetComponentInChildren<VideoPlayBackCloudRecoBehaviour>();
+                video = GetComponentInChildren<VideoPlaybackBehaviour>();
 
                 video.m_path = CloudRecoEventHandler.mPath;
 
@@ -334,7 +334,7 @@ mMyModel.Rotate(0.0f, -0.2666f, 0.0f);
 
                 if (video.VideoPlayer.Load(video.m_path, VideoPlayerHelper.MediaType.ON_TEXTURE, true, mVideoCurrentPosition))
                 {
-                    Debug.Log("Loaded Video: " + video.m_path + " Video Texture Id: " + video.mVideoTexture.GetNativeTextureID());
+                    //Debug.Log("Loaded Video: " + video.m_path + " Video Texture Id: " + video.mVideoTexture.GetNativeTextureID());
                 }
 
                 ResumeVideo();
