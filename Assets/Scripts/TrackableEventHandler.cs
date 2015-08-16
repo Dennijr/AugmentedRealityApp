@@ -39,23 +39,23 @@ public class TrackableEventHandler : MonoBehaviour,
 
     void Update()
     {
-        // Pause the video if tracking is lost for more than two seconds
-        if (mHasBeenFound && mLostTracking)
-        {
-            if (mSecondsSinceLost > 2.0f)
-            {
-                VideoPlaybackBehaviour video = GetComponentInChildren<VideoPlaybackBehaviour>();
-                if (video != null &&
-                    video.CurrentState == VideoPlayerHelper.MediaState.PLAYING)
-                {
-                    video.VideoPlayer.Pause();
-                }
-
-                mLostTracking = false;
-            }
-
-            mSecondsSinceLost += Time.deltaTime;
-        }
+//        // Pause the video if tracking is lost for more than two seconds
+//        if (mHasBeenFound && mLostTracking)
+//        {
+//            if (mSecondsSinceLost > 2.0f)
+//            {
+//                VideoPlaybackBehaviour video = GetComponentInChildren<VideoPlaybackBehaviour>();
+//                if (video != null &&
+//                    video.CurrentState == VideoPlayerHelper.MediaState.PLAYING)
+//                {
+//                    video.VideoPlayer.Pause();
+//                }
+//
+//                mLostTracking = false;
+//            }
+//
+//            mSecondsSinceLost += Time.deltaTime;
+//        }
     }
 
     #endregion // UNITY_MONOBEHAVIOUR_METHODS
@@ -111,32 +111,8 @@ public class TrackableEventHandler : MonoBehaviour,
 
         // Optionally play the video automatically when the target is found
 
-        VideoPlaybackBehaviour video = GetComponentInChildren<VideoPlaybackBehaviour>();
-        if (video != null && video.AutoPlay)
-        {
-            if (video.VideoPlayer.IsPlayableOnTexture())
-            {
-                VideoPlayerHelper.MediaState state = video.VideoPlayer.GetStatus();
-                if (state == VideoPlayerHelper.MediaState.PAUSED ||
-                    state == VideoPlayerHelper.MediaState.READY ||
-                    state == VideoPlayerHelper.MediaState.STOPPED)
-                {
-                    // Pause other videos before playing this one
-                    PauseOtherVideos(video);
-
-                    // Play this video on texture where it left off
-                    video.VideoPlayer.Play(false, video.VideoPlayer.GetCurrentPosition());
-                }
-                else if (state == VideoPlayerHelper.MediaState.REACHED_END)
-                {
-                    // Pause other videos before playing this one
-                    PauseOtherVideos(video);
-
-                    // Play this video from the beginning
-                    video.VideoPlayer.Play(false, 0);
-                }
-            }
-        }
+		objReaderCSharpV4 objReader = GetComponentInChildren<objReaderCSharpV4> ();
+		objReader.StartCoroutine ("Init", "GameObject");
 
         mHasBeenFound = true;
         mLostTracking = false;

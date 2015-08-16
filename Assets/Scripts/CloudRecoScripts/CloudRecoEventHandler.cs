@@ -27,6 +27,8 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
 
     public static string mPath;
 
+	public static string type;
+
 
     #region EXPOSED_PUBLIC_VARIABLES
 
@@ -130,6 +132,12 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         }
         Debug.Log("Meatadata: " + targetSearchResult.MetaData);
         mPath = targetSearchResult.MetaData;
+
+		if (mPath.Contains ("obj")) {
+			type = "3d";
+		} else {
+			type = "video";
+		}
         // First clear all trackables
         mObjectTracker.TargetFinder.ClearTrackables(false);
 
