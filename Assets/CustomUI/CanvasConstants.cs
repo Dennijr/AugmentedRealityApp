@@ -7,6 +7,8 @@ public class CanvasConstants : MonoBehaviour
     public Canvas canvas;
 
     public static event EventHandler resizeHandler;
+    public static string appName = "ActivateAR";
+    public static string screenShotPath;
 
     [HideInInspector]
     public static float canvasWidth;
@@ -22,6 +24,8 @@ public class CanvasConstants : MonoBehaviour
         {
             canvasRect = canvas.GetComponent<RectTransform>();
         }
+        screenShotPath = Application.persistentDataPath;
+        Debug.Log(screenShotPath);
     }
 
     void Update()

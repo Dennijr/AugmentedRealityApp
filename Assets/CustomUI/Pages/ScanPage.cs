@@ -3,6 +3,7 @@ using System.Collections;
 using MaterialUI;
 using Vuforia;
 using AssemblyCSharp;
+using System;
 
 namespace CustomUI
 {
@@ -150,6 +151,12 @@ namespace CustomUI
         public void HyperlinkClick()
         {
             Application.OpenURL("http://www.google.com");
+        }
+
+        public void CaptureScreenShot()
+        {
+            Application.CaptureScreenshot(FileManager.GetScreenShotFileName());
+            PagesManager.DisplayToast("Screenshot captured");
         }
     }
 }

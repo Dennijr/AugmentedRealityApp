@@ -24,14 +24,15 @@ namespace AssemblyCSharp
         private TrackableBehaviour mTrackableBehaviour;
         private VideoPlaybackBehaviour video;
 
-		private GameObject videoObject;
-		private GameObject threeDObject;
+        private GameObject videoObject;
+        private GameObject threeDObject;
 
 
         private bool mHasBeenFound = false;
         private bool mLostTracking;
         private bool videoFinished;
         private bool isAudioMuted = false;
+        private bool isVideoPlaying = false;
         private float mSecondsSinceLost;
         private float distanceToCamera;
 
@@ -48,7 +49,7 @@ namespace AssemblyCSharp
         public event EventHandler OnTrackingLostHandler;
         public event EventHandler OnTrackingFoundHandler;
         public event EventHandler OnVideoPlayHandler;
-		public event EventHandler OnVideoLoadHandler;
+        public event EventHandler OnVideoLoadHandler;
         public event EventHandler OnVideoUnloadHandler;
 
         private void CallOnTrackingLostHandler()
@@ -66,12 +67,12 @@ namespace AssemblyCSharp
             if (OnVideoPlayHandler != null) OnVideoPlayHandler(this, new EventArgs());
         }
 
-		private void CallOnVideoLoadHandler()
-		{
-			if (OnVideoLoadHandler != null) OnVideoLoadHandler(this, new EventArgs());
-		}
-		
-		private void CallOnVideoUnloadHandler()
+        private void CallOnVideoLoadHandler()
+        {
+            if (OnVideoLoadHandler != null) OnVideoLoadHandler(this, new EventArgs());
+        }
+
+        private void CallOnVideoUnloadHandler()
         {
             if (OnVideoUnloadHandler != null) OnVideoUnloadHandler(this, new EventArgs());
         }
@@ -89,8 +90,8 @@ foreach (Transform child in allChildren) {
 if (child.name == "MyModel") mMyModel = child;
 }
 */
-			threeDObject = GameObject.Find ("GameObject");
-			videoObject = GameObject.Find ("Video");
+            threeDObject = GameObject.Find("GameObject");
+            videoObject = GameObject.Find("Video");
 
             mTrackableBehaviour = GetComponent<TrackableBehaviour>();
             if (mTrackableBehaviour)
@@ -106,42 +107,64 @@ if (child.name == "MyModel") mMyModel = child;
 
         void Update()
         {
-			if (CloudRecoEventHandler.type == "video") {
-				if (video == null)
-					return;
+            if (CloudRecoEventHandler.type == "video")
+            {
+                if (video == null) return;
 
-				if (!mLostTracking && mHasBeenFound) {
+                if (video.CurrentState == VideoPlayerHelper.MediaState.PLAYING ||
+                video.CurrentState == VideoPlayerHelper.MediaState.PAUSED)
+                {
+                    if (!isVideoPlaying)
+                    {
+                        StartCoroutine("CallOnVideoPlayHandler");
+                        isVideoPlaying = true;
+                    }
+                }
+                else
+                {
+                    if (isVideoPlaying)
+                    {
+                        StartCoroutine("CallOnVideoUnloadHandler");
+                        isVideoPlaying = false;
+                    }
+                }
 
-					//if video is playing, get distance to camera.
-					if (video.CurrentState == VideoPlayerHelper.MediaState.PLAYING) {
-						distanceToCamera = Vector3.Distance (Camera.main.transform.position, transform.root.position);
-						mCurrentVolume = 1.0f - (Mathf.Clamp01 (distanceToCamera * 0.0005f) * 0.5f);
-						SetVolume (mCurrentVolume);
-						StartCoroutine("CallOnVideoPlayHandler");
-					} else if (video.CurrentState == VideoPlayerHelper.MediaState.REACHED_END) {
-						//Loop automatically if marker is visible and video has reached the end
-						//comment this out if you want the play button to appear when the video has reached the end 
-						Debug.Log ("Video Has ended, playing again");
-						PlayVideo (false, 0);
-					} else if(video.CurrentState == VideoPlayerHelper.MediaState.NOT_READY) {
-						StartCoroutine("CallOnVideoLoadHandler");
-					}
-				}
+                if (!mLostTracking && mHasBeenFound)
+                {
 
-				// Pause the video if tracking is lost for more than n seconds
-				if (mHasBeenFound && mLostTracking && !videoFinished) {
-					if (video.CurrentState == VideoPlayerHelper.MediaState.PLAYING) {
-						//fade out volume from current if marker is lost
-						Debug.Log (mCurrentVolume - mSecondsSinceLost);
-						SetVolume (Mathf.Clamp01 (mCurrentVolume - mSecondsSinceLost));
-					}
-					//n.0f is number of seconds before playback stops when marker is lost
-					if (mSecondsSinceLost > 0.0f) {
-						PauseAndUnloadVideo ();
-					}
-					mSecondsSinceLost += Time.deltaTime;
-				}
-			}
+                    //if video is playing, get distance to camera.
+                    if (video.CurrentState == VideoPlayerHelper.MediaState.PLAYING)
+                    {
+                        distanceToCamera = Vector3.Distance(Camera.main.transform.position, transform.root.position);
+                        mCurrentVolume = 1.0f - (Mathf.Clamp01(distanceToCamera * 0.0005f) * 0.5f);
+                        SetVolume(mCurrentVolume);
+                    }
+                    else if (video.CurrentState == VideoPlayerHelper.MediaState.REACHED_END)
+                    {
+                        //Loop automatically if marker is visible and video has reached the end
+                        //comment this out if you want the play button to appear when the video has reached the end 
+                        Debug.Log("Video Has ended, playing again");
+                        PlayVideo(false, 0);
+                    }
+                }
+
+                // Pause the video if tracking is lost for more than n seconds
+                if (mHasBeenFound && mLostTracking && !videoFinished)
+                {
+                    if (video.CurrentState == VideoPlayerHelper.MediaState.PLAYING)
+                    {
+                        //fade out volume from current if marker is lost
+                        Debug.Log(mCurrentVolume - mSecondsSinceLost);
+                        SetVolume(Mathf.Clamp01(mCurrentVolume - mSecondsSinceLost));
+                    }
+                    //n.0f is number of seconds before playback stops when marker is lost
+                    if (mSecondsSinceLost > 0.0f)
+                    {
+                        PauseAndUnloadVideo();
+                    }
+                    mSecondsSinceLost += Time.deltaTime;
+                }
+            }
         }
 
         #endregion // UNITY_MONOBEHAVIOUR_METHODS
@@ -304,56 +327,62 @@ if (child.name == "MyModel") mMyModel = child;
         private void OnTrackingFound()
         {
             if (OnTrackingFoundHandler != null) OnTrackingFoundHandler(this, new EventArgs());
-           
-			if (CloudRecoEventHandler.type == "video") {
-//				videoObject.SetActive(true);
-				threeDObject.SetActive(false);
-				Renderer[] rendererComponents = videoObject.GetComponentsInChildren<Renderer>();
-				Collider[] colliderComponents = videoObject.GetComponentsInChildren<Collider>();
-				
 
-				// Enable rendering:
-				foreach (Renderer component in rendererComponents)
-				{
-					component.enabled = true;
-				}
-				
-				// Enable colliders:
-				foreach (Collider component in colliderComponents)
-				{
-					component.enabled = true;
-				}
+            if (CloudRecoEventHandler.type == "video")
+            {
+                //				videoObject.SetActive(true);
+                threeDObject.SetActive(false);
+                Renderer[] rendererComponents = videoObject.GetComponentsInChildren<Renderer>();
+                Collider[] colliderComponents = videoObject.GetComponentsInChildren<Collider>();
 
-				AudioSource[] audioComponents = GetComponentsInChildren<AudioSource>();
 
-				//Play audio:
-				foreach (AudioSource component in audioComponents) {
-					component.Play ();
-				}
+                // Enable rendering:
+                foreach (Renderer component in rendererComponents)
+                {
+                    component.enabled = true;
+                }
 
-				Debug.Log ("Trackable " + mTrackableBehaviour.TrackableName + " found");
+                // Enable colliders:
+                foreach (Collider component in colliderComponents)
+                {
+                    component.enabled = true;
+                }
 
-				// Optionally play the video automatically when the target is found
-				//			video.InitializeVideoPlayback ();
-				if (video != null) {
-					video = GetComponentInChildren<VideoPlaybackBehaviour> ();
+                AudioSource[] audioComponents = GetComponentsInChildren<AudioSource>();
 
-					video.m_path = CloudRecoEventHandler.mPath;
+                //Play audio:
+                foreach (AudioSource component in audioComponents)
+                {
+                    component.Play();
+                }
 
-					video.VideoPlayer.SetFilename (CloudRecoEventHandler.mPath);
+                Debug.Log("Trackable " + mTrackableBehaviour.TrackableName + " found");
 
-					if (video.VideoPlayer.Load (video.m_path, VideoPlayerHelper.MediaType.ON_TEXTURE, true, mVideoCurrentPosition)) {
-//						Debug.Log ("Loaded Video: " + video.m_path + " Video Texture Id: " + video.mVideoTexture.GetNativeTextureID ());
-					}
+                // Optionally play the video automatically when the target is found
+                //			video.InitializeVideoPlayback ();
+                if (video != null)
+                {
+                    video = GetComponentInChildren<VideoPlaybackBehaviour>();
 
-					ResumeVideo ();
-				}
-			} else if (CloudRecoEventHandler.type == "3d"){
-//				videoObject.SetActive (false);
-				threeDObject.SetActive (true);
-				objReaderCSharpV4 objReader = GetComponentInChildren<objReaderCSharpV4> ();
-				objReader.StartCoroutine ("Init", "GameObject");
-			}
+                    video.m_path = CloudRecoEventHandler.mPath;
+
+                    video.VideoPlayer.SetFilename(CloudRecoEventHandler.mPath);
+
+                    if (video.VideoPlayer.Load(video.m_path, VideoPlayerHelper.MediaType.ON_TEXTURE, true, mVideoCurrentPosition))
+                    {
+                        //						Debug.Log ("Loaded Video: " + video.m_path + " Video Texture Id: " + video.mVideoTexture.GetNativeTextureID ());
+                    }
+
+                    ResumeVideo();
+                }
+            }
+            else if (CloudRecoEventHandler.type == "3d")
+            {
+                //				videoObject.SetActive (false);
+                threeDObject.SetActive(true);
+                objReaderCSharpV4 objReader = GetComponentInChildren<objReaderCSharpV4>();
+                objReader.StartCoroutine("Init", "GameObject");
+            }
 
 
             mHasBeenFound = true;
@@ -363,9 +392,9 @@ if (child.name == "MyModel") mMyModel = child;
 
         public void OnTrackingLost()
         {
-//			videoObject.SetActive (false);
-			threeDObject.SetActive (false);
-			if (OnTrackingLostHandler != null) OnTrackingLostHandler(this, new EventArgs());
+            //			videoObject.SetActive (false);
+            threeDObject.SetActive(false);
+            if (OnTrackingLostHandler != null) OnTrackingLostHandler(this, new EventArgs());
             Renderer[] rendererComponents = GetComponentsInChildren<Renderer>();
             Collider[] colliderComponents = GetComponentsInChildren<Collider>();
             AudioSource[] audioComponents = GetComponentsInChildren<AudioSource>();

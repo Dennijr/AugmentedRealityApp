@@ -357,9 +357,7 @@ public class VideoPlaybackBehaviour : MonoBehaviour
         {
             InitVideoTexture();
             SetVideoTextureAndAspectRatio();
-            Material mat = GetComponent<Renderer>().material;
-            mat.mainTexture = mVideoTexture;
-            mat.mainTextureScale = new Vector2(1, 1);
+            StartCoroutine(DelayVideoPlayback());
         }
         else
         {
@@ -500,5 +498,16 @@ public class VideoPlaybackBehaviour : MonoBehaviour
             // Flip the plane as the video texture is mirrored on the horizontal
             transform.localScale = new Vector3(-0.1f, 0.1f, 0.1f * aspect);
         }
+    }
+
+    IEnumerator DelayVideoPlayback()
+    {
+        int numFramesToDelay = (int)(1.0f / Time.fixedDeltaTime);
+        for (int i = 0; i < numFramesToDelay; i++)
+            yield return null;
+
+        Material mat = GetComponent<Renderer>().material;
+        mat.mainTexture = mVideoTexture;
+        mat.mainTextureScale = new Vector2(1, 1);
     }
 }
