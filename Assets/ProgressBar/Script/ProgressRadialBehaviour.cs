@@ -190,5 +190,6 @@ namespace ProgressBar
 		{
 			m_Value = 0;
 		}
+
     }
 }

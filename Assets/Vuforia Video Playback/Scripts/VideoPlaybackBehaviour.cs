@@ -134,6 +134,7 @@ public class VideoPlaybackBehaviour : MonoBehaviour
 
     void Start()
     {
+		Debug.Log("Inside Start VideoPlayBack");
         // Find the icon plane (child of this object)
         mIconPlane = transform.Find("Icon").gameObject;
 
@@ -169,6 +170,7 @@ public class VideoPlaybackBehaviour : MonoBehaviour
 
         if (!mIsInited)
         {
+			Debug.Log("Initialising the video");
             // Initialize the video player
             if (mVideoPlayer.Init() == false)
             {
@@ -197,7 +199,6 @@ public class VideoPlaybackBehaviour : MonoBehaviour
         {
             // Get the video player status
             VideoPlayerHelper.MediaState state = mVideoPlayer.GetStatus();
-
             if (state == VideoPlayerHelper.MediaState.ERROR)
             {
                 Debug.Log("Could not load video '" + m_path + "' for media type " + mMediaType);
@@ -348,6 +349,7 @@ public class VideoPlaybackBehaviour : MonoBehaviour
     // Handle video playback state changes
     private void HandleStateChange(VideoPlayerHelper.MediaState newState)
     {
+	
         // If the movie is playing or paused render the video texture
         // Otherwise render the keyframe
         if (newState == VideoPlayerHelper.MediaState.PLAYING ||
@@ -368,10 +370,10 @@ public class VideoPlaybackBehaviour : MonoBehaviour
                 mat.mainTextureScale = new Vector2(1, -1);
             }
         }
-
         // Display the appropriate icon, or disable if not needed
         switch (newState)
         {
+
             case VideoPlayerHelper.MediaState.READY:
             case VideoPlayerHelper.MediaState.REACHED_END:
             case VideoPlayerHelper.MediaState.PAUSED:
@@ -382,12 +384,12 @@ public class VideoPlaybackBehaviour : MonoBehaviour
 
             case VideoPlayerHelper.MediaState.NOT_READY:
             case VideoPlayerHelper.MediaState.PLAYING_FULLSCREEN:
-                mIconPlane.GetComponent<Renderer>().material.mainTexture = m_busyTexture;
-                mIconPlaneActive = true;
+//				mIconPlane.GetComponent<Renderer>().material.mainTexture = m_busyTexture;
+//                mIconPlaneActive = true;
                 break;
 
             case VideoPlayerHelper.MediaState.ERROR:
-                mIconPlane.GetComponent<Renderer>().material.mainTexture = m_errorTexture;
+				mIconPlane.GetComponent<Renderer>().material.mainTexture = m_errorTexture;
                 mIconPlaneActive = true;
                 break;
 

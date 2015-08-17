@@ -12,6 +12,7 @@ namespace CustomUI
         public GameObject background;
         public GameObject cloudRecognition;
         public GameObject imageTarget;
+		public GameObject loadingIndicator;
 
         public GameObject flashButton;
         public GameObject volumeButton;
@@ -35,6 +36,7 @@ namespace CustomUI
                 trackableCloudRecoEventHandler.OnTrackingLostHandler += trackableCloudRecoEventHandler_OnTrackingLostHandler;
                 trackableCloudRecoEventHandler.OnTrackingFoundHandler += trackableCloudRecoEventHandler_OnTrackingFoundHandler;
                 trackableCloudRecoEventHandler.OnVideoPlayHandler += trackableCloudRecoEventHandler_OnVideoPlayHandler;
+				trackableCloudRecoEventHandler.OnVideoLoadHandler += trackableCloudRecoEventHandler_OnVideoLoadHandler;
                 trackableCloudRecoEventHandler.OnVideoUnloadHandler += trackableCloudRecoEventHandler_OnVideoUnloadHandler;
             }
             catch { }
@@ -49,12 +51,20 @@ namespace CustomUI
 
         private void trackableCloudRecoEventHandler_OnTrackingLostHandler(object sender, System.EventArgs e)
         {
+			loadingIndicator.SetActive (false);
         }
 
         private void trackableCloudRecoEventHandler_OnVideoPlayHandler(object sender, System.EventArgs e)
         {
+			Debug.Log ("On Video Play Handler");
+			loadingIndicator.SetActive(false);
             captureButton.SetActive(true);
         }
+
+		private void trackableCloudRecoEventHandler_OnVideoLoadHandler(object sender, System.EventArgs e)
+		{
+			loadingIndicator.SetActive(true);
+		}
 
         private void trackableCloudRecoEventHandler_OnVideoUnloadHandler(object sender, System.EventArgs e)
         {
@@ -63,7 +73,8 @@ namespace CustomUI
 
         public override void OnNavigatingTo(NavigationEventArgs e)
         {
-
+			Debug.Log("Navigating to SCan");
+			loadingIndicator.SetActive (true);
         }
 
         public override void OnNavigatedTo(NavigationEventArgs e)
@@ -82,6 +93,7 @@ namespace CustomUI
             if (isPageActive)
             {
                 arCamera.SetActive(true);
+				loadingIndicator.SetActive (false);
                 cloudRecognition.SetActive(true);
                 imageTarget.SetActive(true);
                 background.SetActive(false);
@@ -99,6 +111,7 @@ namespace CustomUI
             trackableCloudRecoEventHandler.PauseAndUnloadVideo();
             trackableCloudRecoEventHandler.OnTrackingLost();
             background.SetActive(true);
+			loadingIndicator.SetActive(false);
             cloudRecognition.SetActive(false);
             imageTarget.SetActive(false);
             SetFlash(false);
