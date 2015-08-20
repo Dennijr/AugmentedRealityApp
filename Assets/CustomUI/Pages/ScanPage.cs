@@ -13,8 +13,10 @@ namespace CustomUI
         public GameObject background;
         public GameObject cloudRecognition;
         public GameObject imageTarget;
-		public GameObject loadingIndicator;
+        public GameObject loadingIndicator;
+		public GameObject streamingIndicator;
 
+        public GameObject sharePopup;
         public GameObject flashButton;
         public GameObject volumeButton;
         public GameObject shareButton;
@@ -39,8 +41,14 @@ namespace CustomUI
                 trackableCloudRecoEventHandler.OnVideoPlayHandler += trackableCloudRecoEventHandler_OnVideoPlayHandler;
 				trackableCloudRecoEventHandler.OnVideoLoadHandler += trackableCloudRecoEventHandler_OnVideoLoadHandler;
                 trackableCloudRecoEventHandler.OnVideoUnloadHandler += trackableCloudRecoEventHandler_OnVideoUnloadHandler;
+                trackableCloudRecoEventHandler.OnVideoFinishHandler += trackableCloudRecoEventHandler_OnVideoFinishHandler;
             }
             catch { }
+        }
+
+        private void trackableCloudRecoEventHandler_OnVideoFinishHandler(object sender, EventArgs e)
+        {
+            sharePopup.SetActive(true);
         }
 
         private void trackableCloudRecoEventHandler_OnTrackingFoundHandler(object sender, System.EventArgs e)
@@ -52,19 +60,18 @@ namespace CustomUI
 
         private void trackableCloudRecoEventHandler_OnTrackingLostHandler(object sender, System.EventArgs e)
         {
-			loadingIndicator.SetActive (false);
+			streamingIndicator.SetActive (false);
         }
 
         private void trackableCloudRecoEventHandler_OnVideoPlayHandler(object sender, System.EventArgs e)
         {
-			Debug.Log ("On Video Play Handler");
-			loadingIndicator.SetActive(false);
+			streamingIndicator.SetActive(false);
             captureButton.SetActive(true);
         }
 
 		private void trackableCloudRecoEventHandler_OnVideoLoadHandler(object sender, System.EventArgs e)
 		{
-			loadingIndicator.SetActive(true);
+			streamingIndicator.SetActive(true);
 		}
 
         private void trackableCloudRecoEventHandler_OnVideoUnloadHandler(object sender, System.EventArgs e)
@@ -74,14 +81,15 @@ namespace CustomUI
 
         public override void OnNavigatingTo(NavigationEventArgs e)
         {
-			Debug.Log("Navigating to SCan");
-			loadingIndicator.SetActive (true);
+			//loadingIndicator.SetActive (true);
         }
 
         public override void OnNavigatedTo(NavigationEventArgs e)
         {
             isPageActive = true;
-            Invoke("DelayedLoad", 0.5f);
+            loadingIndicator.SetActive(true);
+            //Delay camera load so that the page transition effect finishes
+            Invoke("LoadCamera", 0.5f);
         }
 
         private void DisableArCamera()
@@ -89,16 +97,22 @@ namespace CustomUI
             arCamera.SetActive(false);
         }
 
-        private void DelayedLoad()
+        private void LoadCamera()
         {
             if (isPageActive)
             {
                 arCamera.SetActive(true);
-				loadingIndicator.SetActive (false);
                 cloudRecognition.SetActive(true);
                 imageTarget.SetActive(true);
-                background.SetActive(false);
+                //Delay disabling background or home page contents will be shown till the camera feedback appears
+                Invoke("ShowCamera", 0.1f);
             }
+        }
+
+        private void ShowCamera()
+        {
+            background.SetActive(false);
+            loadingIndicator.SetActive(false);
         }
 
         public override void OnNavigatingFrom(NavigationEventArgs e)
@@ -108,17 +122,21 @@ namespace CustomUI
 
         public override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            arCamera.SetActive(false);
             trackableCloudRecoEventHandler.PauseAndUnloadVideo();
-            trackableCloudRecoEventHandler.OnTrackingLost();
+            trackableCloudRecoEventHandler.OnTrackingLost(true);
+            trackableCloudRecoEventHandler.isAudioMuted = false;
+            SetVolumeButton(true);
             background.SetActive(true);
-			loadingIndicator.SetActive(false);
+            arCamera.SetActive(false);
+			streamingIndicator.SetActive(false);
+            loadingIndicator.SetActive(false);
             cloudRecognition.SetActive(false);
             imageTarget.SetActive(false);
             SetFlash(false);
             volumeButton.SetActive(false);
             shareButton.SetActive(false);
             linkButton.SetActive(false);
+            captureButton.SetActive(false);
         }
 
         public void ToggleVolume()
@@ -128,6 +146,12 @@ namespace CustomUI
                 isAudioEnabled = !isAudioEnabled;
                 volumeButton.transform.Find("Image").GetComponent<ImageToggle>().SetSprite(isAudioEnabled);
             }
+        }
+
+        private void SetVolumeButton(bool on)
+        {
+            isAudioEnabled = on;
+            volumeButton.transform.Find("Image").GetComponent<ImageToggle>().SetSprite(isAudioEnabled);
         }
 
         public void ToggleFlash()
@@ -145,7 +169,8 @@ namespace CustomUI
 
         public void ShareClick()
         {
-            Application.OpenURL("http://www.facebook.com");
+            //Application.OpenURL("http://www.facebook.com");
+            sharePopup.SetActive(true);
         }
 
         public void HyperlinkClick()
@@ -157,6 +182,16 @@ namespace CustomUI
         {
             Application.CaptureScreenshot(FileManager.GetScreenShotFileName());
             PagesManager.DisplayToast("Screenshot captured");
+        }
+
+        public void ShareToFacebook()
+        {
+            AppSocial.ShareToFacebook();
+        }
+
+        public void ShareToTwitter()
+        {
+            AppSocial.ShareToTwitter();
         }
     }
 }

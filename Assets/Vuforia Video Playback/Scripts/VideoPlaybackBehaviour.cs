@@ -134,7 +134,6 @@ public class VideoPlaybackBehaviour : MonoBehaviour
 
     void Start()
     {
-		Debug.Log("Inside Start VideoPlayBack");
         // Find the icon plane (child of this object)
         mIconPlane = transform.Find("Icon").gameObject;
 
@@ -371,8 +370,8 @@ public class VideoPlaybackBehaviour : MonoBehaviour
         // Display the appropriate icon, or disable if not needed
         switch (newState)
         {
-
-            case VideoPlayerHelper.MediaState.READY:
+            // We don't want to show play icon when the video starts to play
+            // case VideoPlayerHelper.MediaState.READY:
             case VideoPlayerHelper.MediaState.REACHED_END:
             case VideoPlayerHelper.MediaState.PAUSED:
             case VideoPlayerHelper.MediaState.STOPPED:

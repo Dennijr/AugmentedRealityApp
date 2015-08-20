@@ -181,12 +181,14 @@ namespace CustomUI
 
         /// <summary>
         /// Navigate to a page without history
+        /// Called from navigation drawer(menu manager)
         /// </summary>
         /// <param name="menuItem"></param>
         public void HandleMenuClick(MenuItem menuItem)
         {
             ClearLastPages();
-            SetPage(GetPage(menuItem));
+            var newpage = GetPage(menuItem);
+            if (newpage != currentPage) SetPage(newpage);
         }
 
         /// <summary>
@@ -216,6 +218,11 @@ namespace CustomUI
             lastPage.ShowWithoutTransition();
             currentPage.Hide();
             SetCurrentPage(lastPage, NavigationType.Back);
+        }
+
+        public void HideObject(GameObject gameObject)
+        {
+            gameObject.SetActive(false);
         }
     }
 }
