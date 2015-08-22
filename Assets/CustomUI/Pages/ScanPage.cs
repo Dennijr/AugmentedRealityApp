@@ -177,8 +177,9 @@ namespace CustomUI
 
         public void HyperlinkClick()
         {
-            Application.OpenURL("http://www.google.com");
+            Application.OpenURL(CloudRecoEventHandler.metadata["hyperlink"].str.Replace("\\", ""));
         }
+
 
         public void CaptureScreenShot()
         {
