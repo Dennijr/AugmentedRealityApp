@@ -36,7 +36,7 @@ class objReaderCSharpV4 : MonoBehaviour {
 	public Texture LoadingSpinner;
 	
 	Mesh _myMesh;
-	Material _myMaterial = new Material(Shader.Find("Diffuse"));
+	Material _myMaterial;
 	
 	Vector3[] _vertexArray;
 	ArrayList _vertexArrayList = new ArrayList();
@@ -60,7 +60,8 @@ class objReaderCSharpV4 : MonoBehaviour {
 	
 	// Use this for initialization
 	public IEnumerator Init (string gameObjectName) {
-		_textFieldString = CloudRecoEventHandler.mPath;
+		_textFieldString = CloudRecoEventHandler.metadata["imagelocation"].str.Replace("\\", "");
+		_textureLink = CloudRecoEventHandler.metadata ["texturelocation"].str.Replace ("\\", "");
 		LoadingSpinner = new Texture ();
 		yield return StartCoroutine(SomeFunction(gameObjectName));
 	}
@@ -74,7 +75,8 @@ class objReaderCSharpV4 : MonoBehaviour {
 	}
 	
 	public IEnumerator SomeFunction(string gameObjectName) {
-		
+		_myMaterial = new Material (Shader.Find ("Diffuse"));
+
 		GameObject obj_gameobject = GameObject.Find(gameObjectName);
 		
 		Debug.Log("started parsing the obj...");
@@ -133,7 +135,28 @@ class objReaderCSharpV4 : MonoBehaviour {
 		temp = (MeshFilter)obj_gameobject.GetComponent("MeshFilter");
 		temp.mesh = _myMesh;
 		
-		obj_gameobject.GetComponent<MeshRenderer> ().enabled = true;
+//		obj_gameobject.GetComponent<MeshRenderer> ().enabled = true;
+
+		if ((MeshRenderer)obj_gameobject.GetComponent("MeshRenderer") == null)
+			obj_gameobject.AddComponent<MeshRenderer>();
+		// retrieve the texture
+		Debug.Log ("uv arraylist count: " + _uvArrayList.Count + " Texture link: " + _textureLink);
+		if (_uvArrayList.Count > 0 && _textureLink != "") {
+			WWW wwwtx = new WWW(_textureLink);
+			yield return wwwtx;
+			Debug.Log("Loading texture");
+			_myMaterial.mainTexture = wwwtx.texture;
+		}
+		// assign the texture to the meshrenderer
+		MeshRenderer temp2;
+		temp2 = (MeshRenderer)obj_gameobject.GetComponent("MeshRenderer");
+		if (_uvArrayList.Count > 0 && _textureLink != "") {
+			temp2.material = _myMaterial;
+			_myMaterial.shader = Shader.Find("Diffuse");
+		}
+		
+		yield return new WaitForFixedUpdate();
+
 		
 	}
 	

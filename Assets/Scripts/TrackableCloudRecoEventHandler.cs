@@ -117,7 +117,7 @@ namespace AssemblyCSharp
 
         void Update()
         {
-            if (CloudRecoEventHandler.type == "video")
+			if (CloudRecoEventHandler.metadata != null && CloudRecoEventHandler.metadata["description"].str == "video")
             {
                 if (video == null) return;
 
@@ -336,7 +336,7 @@ namespace AssemblyCSharp
 
         private void OnTrackingFound()
         {
-            if (CloudRecoEventHandler.type == "video")
+			if (CloudRecoEventHandler.metadata["description"].str == "video")
             {
                 // videoObject.SetActive(true);
                 threeDObject.SetActive(false);
@@ -372,11 +372,11 @@ namespace AssemblyCSharp
                 {
                     video = GetComponentInChildren<VideoPlaybackBehaviour>();
 
-                    video.m_path = CloudRecoEventHandler.mPath;
+                    video.m_path = CloudRecoEventHandler.metadata["imagelocation"].str.Replace("\\", "");
 
-                    video.VideoPlayer.SetFilename(CloudRecoEventHandler.mPath);
-
-                    if (video.VideoPlayer.Load(video.m_path, VideoPlayerHelper.MediaType.ON_TEXTURE, true, mVideoCurrentPosition))
+					video.VideoPlayer.SetFilename(CloudRecoEventHandler.metadata["imagelocation"].str.Replace("\\", ""));
+					
+					if (video.VideoPlayer.Load(video.m_path, VideoPlayerHelper.MediaType.ON_TEXTURE, true, mVideoCurrentPosition))
                     {
                         //						Debug.Log ("Loaded Video: " + video.m_path + " Video Texture Id: " + video.mVideoTexture.GetNativeTextureID ());
                     }
@@ -384,12 +384,13 @@ namespace AssemblyCSharp
                     ResumeVideo();
                 }
             }
-            else if (CloudRecoEventHandler.type == "3d")
+            else if (CloudRecoEventHandler.metadata["description"].str == "3d")
             {
-                // videoObject.SetActive (false);
+				PauseAndUnloadVideo();
                 threeDObject.SetActive(true);
                 objReaderCSharpV4 objReader = GetComponentInChildren<objReaderCSharpV4>();
                 objReader.StartCoroutine("Init", "GameObject");
+
             }
             
             mHasBeenFound = true;
@@ -404,6 +405,7 @@ namespace AssemblyCSharp
             // To avoid errors using try catch 
             try
             {
+//				videoObject.SetActive(false);
                 threeDObject.SetActive(false);
 
                 Renderer[] rendererComponents = GetComponentsInChildren<Renderer>();

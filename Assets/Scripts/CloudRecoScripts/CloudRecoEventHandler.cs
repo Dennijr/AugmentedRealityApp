@@ -29,6 +29,7 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
 
 	public static string type;
 
+	public static JSONObject metadata;
 
     #region EXPOSED_PUBLIC_VARIABLES
 
@@ -130,10 +131,16 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
         {
             return;
         }
-        Debug.Log("Meatadata: " + targetSearchResult.MetaData);
-        mPath = targetSearchResult.MetaData;
 
-		if (mPath.Contains ("obj")) {
+		metadata = new JSONObject (targetSearchResult.MetaData);
+
+
+		Debug.Log("Metadata: " +metadata.Print());
+        
+		mPath = metadata["imagelocation"].str.Replace("\\", "");
+		
+		Debug.Log ("Mpath: " + mPath);
+		if (metadata["description"].str.Equals("3d")) {
 			type = "3d";
 		} else {
 			type = "video";
