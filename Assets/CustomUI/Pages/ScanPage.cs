@@ -133,6 +133,8 @@ namespace CustomUI
             cloudRecognition.SetActive(false);
             imageTarget.SetActive(false);
             SetFlash(false);
+            // hide the share popup on closing
+            sharePopup.SetActive(false);
             volumeButton.SetActive(false);
             shareButton.SetActive(false);
             linkButton.SetActive(false);
@@ -192,6 +194,17 @@ namespace CustomUI
         public void ShareToTwitter()
         {
             AppSocial.ShareToTwitter();
+        }
+
+        // Hide the share popup when hardware back button is pressed
+        public override void OnBackKeyPress(CancellationEventArgs e)
+        {
+            base.OnBackKeyPress(e);
+            if (sharePopup.activeSelf)
+            {
+                sharePopup.SetActive(false);
+                e.CancelEvent = true;
+            }
         }
     }
 }
