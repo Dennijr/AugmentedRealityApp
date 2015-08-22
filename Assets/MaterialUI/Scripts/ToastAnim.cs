@@ -63,6 +63,8 @@ namespace MaterialUI
 				else
 				{
 					thisRect.position = onPos;
+                    // Avoid update from repeating this loop while waiting
+                    state = 0;
 					StartCoroutine(WaitTime());
 				}
 			}
@@ -77,6 +79,7 @@ namespace MaterialUI
 				}
 				else
 				{
+                    ToastControl.RemoveLastToast();
 					Destroy (gameObject);
 				}
 			}
@@ -87,5 +90,13 @@ namespace MaterialUI
 			yield return new WaitForSeconds(timeToWait);
 			state = 2;
 		}
-	}
+
+        internal void HideToast()
+        {
+            state = 2;
+            tempVec2 = thisRect.position;
+            tempVec2.y = offPos.y;
+            thisRect.position = tempVec2;
+        }
+    }
 }

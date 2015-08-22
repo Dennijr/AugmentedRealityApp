@@ -9,14 +9,14 @@
 //	limitations under the License.
 
 using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.UI;
 
 namespace MaterialUI
 {
 	public static class ToastControl
 	{
-		static GameObject theToast;
+        public static GameObject toastPrefab;
 		public static string toastText;
 		public static float toastDuration;
 		public static Color toastPanelColor;
@@ -24,20 +24,26 @@ namespace MaterialUI
 		public static int toastFontSize;
 		public static Canvas parentCanvas;
 
-		public static void InitToastSystem (Canvas theCanvas)
-		{
-			theToast = Resources.Load ("Toast", typeof(GameObject)) as GameObject;
-			parentCanvas = theCanvas;
-		}
+        static List<GameObject> allToasts = new List<GameObject>();
 
-		public static void MakeToast (string content, float duration, Color panelColor, Color textColor, int fontSize)
-		{
-			toastText = content;
-			toastDuration = duration;
-			toastPanelColor = panelColor;
-			toastTextColor = textColor;
-			toastFontSize = fontSize;
-			GameObject.Instantiate (theToast);
-		}
+        public static void AddToast(GameObject toast)
+        {
+            allToasts.Add(toast);
+        }
+
+        public static void RemoveLastToast()
+        {
+            try
+            {
+                allToasts.RemoveAt(allToasts.Count - 1);
+            }
+            catch { }
+        }
+
+        public static void HideAllToasts()
+        {
+            foreach (var toast in allToasts)
+                toast.GetComponent<ToastAnim>().HideToast();
+        }
 	}
 }

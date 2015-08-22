@@ -23,12 +23,21 @@ namespace MaterialUI
 
 		void Start ()
 		{
-			ToastControl.InitToastSystem (gameObject.GetComponentInParent<Canvas>());
+            ToastControl.parentCanvas = gameObject.GetComponentInParent<Canvas>();
 		}
 
 		public void PopupToast ()
 		{
-			ToastControl.MakeToast (text, duration, panelColor, textColor, fontSize);
+            ToastControl.toastText = text;
+            ToastControl.toastDuration = duration;
+            ToastControl.toastPanelColor = panelColor;
+            ToastControl.toastTextColor = textColor;
+            ToastControl.toastFontSize = fontSize;
+            if (ToastControl.toastPrefab != null)
+            {
+                GameObject toast = Instantiate(ToastControl.toastPrefab) as GameObject;
+                ToastControl.AddToast(toast);
+            }
 		}
 	}
 }

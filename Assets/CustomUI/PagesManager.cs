@@ -15,12 +15,15 @@ namespace CustomUI
         [HideInInspector]
         public Stack<BasePage> lastPages;
 
+        public GameObject toastPrefab;
+
         private static Toaster toasterObject;
 
         void Start()
         {
             Init();
             toasterObject = gameObject.GetComponent<Toaster>();
+            if (toastPrefab != null) ToastControl.toastPrefab = toastPrefab;
         }
 
         void Update()
@@ -141,6 +144,7 @@ namespace CustomUI
             currentPage.OnNavigatingFrom(e);
             newPage.OnNavigatingTo(e);
             newPage.transform.SetAsLastSibling();
+            OnBeforeTransitionBetweenPages();
             newPage.Show(currentPage);
             SetCurrentPage(newPage, NavigationType.New);
         }
@@ -215,6 +219,7 @@ namespace CustomUI
             currentPage.OnNavigatingFrom(e);
             var lastPage = GetLastPage();
             lastPage.OnNavigatingTo(e);
+            OnBeforeTransitionBetweenPages();
             lastPage.ShowWithoutTransition();
             currentPage.Hide();
             SetCurrentPage(lastPage, NavigationType.Back);
@@ -223,6 +228,11 @@ namespace CustomUI
         public void HideObject(GameObject gameObject)
         {
             gameObject.SetActive(false);
+        }
+
+        private void OnBeforeTransitionBetweenPages()
+        {
+            ToastControl.HideAllToasts();
         }
     }
 }
