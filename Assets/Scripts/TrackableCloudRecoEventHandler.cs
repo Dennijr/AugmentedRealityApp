@@ -13,6 +13,8 @@ namespace AssemblyCSharp
     {
         #region PRIVATE_MEMBER_VARIABLES
 
+        private ImageTargetBehaviour mImageTargetBehaviour = null;
+
         private TrackableBehaviour mTrackableBehaviour;
         private VideoPlaybackBehaviour video;
 
@@ -23,8 +25,6 @@ namespace AssemblyCSharp
         private bool mLostTracking;
         private bool videoFinished;
 
-        [HideInInspector]
-        public bool isAudioMuted = false;
         private float mSecondsSinceLost;
         private float distanceToCamera;
 
@@ -40,6 +40,11 @@ namespace AssemblyCSharp
         #endregion // PRIVATE_MEMBER_VARIABLES
 
         #region PUBLIC_MEMBER_VARIABLES
+
+        [HideInInspector]
+        public bool isAudioMuted = false;
+        [HideInInspector]
+        public GameObject overlayObject = null;
 
         public event EventHandler OnTrackingLostHandler;
         public event EventHandler OnTrackingFoundHandler;
@@ -104,6 +109,8 @@ namespace AssemblyCSharp
             threeDObject = GameObject.Find("GameObject");
             videoObject = GameObject.Find("Video");
 
+            mImageTargetBehaviour = GetComponent<ImageTargetBehaviour>();
+
             mTrackableBehaviour = GetComponent<TrackableBehaviour>();
             if (mTrackableBehaviour)
             {
@@ -117,6 +124,17 @@ namespace AssemblyCSharp
 
         void Update()
         {
+            if (overlayObject != null)
+            {
+                Vector3 pointOnTarget = new Vector3(0, 0, 0);
+                // We convert the local point to world coordinates
+                Vector3 targetPointInWorldRef = transform.TransformPoint(pointOnTarget);
+                // We project the world coordinates to screen coords (pixels)
+                Vector3 screenPoint = Camera.main.WorldToScreenPoint(targetPointInWorldRef);
+
+                overlayObject.transform.position = screenPoint;
+            }
+
 			if (CloudRecoEventHandler.metadata != null && CloudRecoEventHandler.metadata["description"].str == "video")
             {
                 if (video == null) return;
@@ -185,6 +203,8 @@ namespace AssemblyCSharp
             {
                 OnTrackingLost();
             }
+            Debug.Log(transform.position);
+            Debug.Log(transform.rotation);
             // Dont block main thread
             StartCoroutine(StateChangeHandler());
         }

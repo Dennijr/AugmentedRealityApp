@@ -22,6 +22,7 @@ namespace CustomUI
         public GameObject shareButton;
         public GameObject linkButton;
         public GameObject captureButton;
+        public GameObject moreInfoButton;
 
         private TrackableCloudRecoEventHandler trackableCloudRecoEventHandler;
         private bool flashEnabled = false;
@@ -48,24 +49,27 @@ namespace CustomUI
 
         private void trackableCloudRecoEventHandler_OnVideoFinishHandler(object sender, EventArgs e)
         {
-            sharePopup.SetActive(true);
+            moreInfoButton.SetActive(true);
+            trackableCloudRecoEventHandler.overlayObject = moreInfoButton;
         }
 
         private void trackableCloudRecoEventHandler_OnTrackingFoundHandler(object sender, System.EventArgs e)
         {
-            volumeButton.SetActive(true);
             shareButton.SetActive(true);
             linkButton.SetActive(true);
         }
 
         private void trackableCloudRecoEventHandler_OnTrackingLostHandler(object sender, System.EventArgs e)
         {
+            trackableCloudRecoEventHandler.overlayObject = null;
+            moreInfoButton.SetActive(false);
 			streamingIndicator.SetActive (false);
         }
 
         private void trackableCloudRecoEventHandler_OnVideoPlayHandler(object sender, System.EventArgs e)
         {
 			streamingIndicator.SetActive(false);
+            volumeButton.SetActive(true);
             captureButton.SetActive(true);
         }
 
@@ -76,6 +80,7 @@ namespace CustomUI
 
         private void trackableCloudRecoEventHandler_OnVideoUnloadHandler(object sender, System.EventArgs e)
         {
+            volumeButton.SetActive(false);
             captureButton.SetActive(false);
         }
 
