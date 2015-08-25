@@ -372,11 +372,11 @@ public class VideoPlaybackBehaviour : MonoBehaviour
         {
             // We don't want to show play icon when the video starts to play
             // case VideoPlayerHelper.MediaState.READY:
-            case VideoPlayerHelper.MediaState.REACHED_END:
+            // case VideoPlayerHelper.MediaState.REACHED_END:
             case VideoPlayerHelper.MediaState.PAUSED:
             case VideoPlayerHelper.MediaState.STOPPED:
-                mIconPlane.GetComponent<Renderer>().material.mainTexture = m_playTexture;
-                mIconPlaneActive = true;
+//                mIconPlane.GetComponent<Renderer>().material.mainTexture = m_playTexture;
+//                mIconPlaneActive = true;
                 break;
 
             case VideoPlayerHelper.MediaState.NOT_READY:

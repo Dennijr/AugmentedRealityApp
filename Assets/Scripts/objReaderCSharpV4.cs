@@ -95,7 +95,7 @@ class objReaderCSharpV4 : MonoBehaviour {
 		WWW www3d = new WWW(_textFieldString);
 		
 		while( !www3d.isDone ) {
-			Debug.Log("Set value: " + www3d.progress);
+			//Debug.Log("Set value: " + www3d.progress);
 			progressBar.SetValue( www3d.progress * 100);
 			yield return null;
 		}

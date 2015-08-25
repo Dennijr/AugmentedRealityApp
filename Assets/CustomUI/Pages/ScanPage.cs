@@ -50,6 +50,7 @@ namespace CustomUI
         private void trackableCloudRecoEventHandler_OnVideoFinishHandler(object sender, EventArgs e)
         {
             moreInfoButton.SetActive(true);
+            streamingIndicator.SetActive(false);
             trackableCloudRecoEventHandler.overlayObject = moreInfoButton;
         }
 

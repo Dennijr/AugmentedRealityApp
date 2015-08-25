@@ -58,7 +58,7 @@ namespace AssemblyCSharp
         {
             yield return null;
             bool nowVideoPlaying = (videoCurrentState == VideoPlayerHelper.MediaState.PLAYING || videoCurrentState == VideoPlayerHelper.MediaState.PLAYING_FULLSCREEN);
-            if (isVideoPlaying != nowVideoPlaying)
+            if ((isVideoPlaying != nowVideoPlaying) && CloudRecoEventHandler.metadata["description"].str == "video")
             {
                 if (nowVideoPlaying)
                 {
@@ -72,7 +72,7 @@ namespace AssemblyCSharp
                 {
                     if (OnVideoUnloadHandler != null) OnVideoUnloadHandler(this, new EventArgs());
                 }
-                if (!nowVideoPlaying && !mLostTracking)
+                if (!nowVideoPlaying && !mLostTracking && !videoFinished)
                 {
                     if (OnVideoLoadHandler != null) OnVideoLoadHandler(this, new EventArgs());
                 }
@@ -87,7 +87,7 @@ namespace AssemblyCSharp
                 {
                     if (OnTrackingFoundHandler != null) OnTrackingFoundHandler(this, new EventArgs());
                 }
-                if (!nowVideoPlaying && !mLostTracking)
+                if (!nowVideoPlaying && !mLostTracking && !videoFinished && CloudRecoEventHandler.metadata["description"].str == "video")
                 {
                     if (OnVideoLoadHandler != null) OnVideoLoadHandler(this, new EventArgs());
                 }
@@ -158,6 +158,7 @@ namespace AssemblyCSharp
                     }
                     else if (video.CurrentState == VideoPlayerHelper.MediaState.REACHED_END)
                     {
+                        videoFinished = true;
                         //Loop automatically if marker is visible and video has reached the end
                         //comment this out if you want the play button to appear when the video has reached the end 
                         Debug.Log("Video Has ended, playing again");
@@ -203,8 +204,6 @@ namespace AssemblyCSharp
             {
                 OnTrackingLost();
             }
-            Debug.Log(transform.position);
-            Debug.Log(transform.rotation);
             // Dont block main thread
             StartCoroutine(StateChangeHandler());
         }
@@ -335,7 +334,6 @@ namespace AssemblyCSharp
                     if (video.VideoPlayer.Unload())
                     {
                         Debug.Log("UnLoaded Video: " + video.m_path);
-                        videoFinished = true;
                         return true;
                     }
                 }
