@@ -47,7 +47,7 @@ namespace CustomUI
             }
         }
 
-        private void HandleBackKeyPress()
+        public void HandleBackKeyPress()
         {
             if (currentPage != null)
             {
