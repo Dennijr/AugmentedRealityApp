@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Collections;
+using System;
 
 namespace CustomUI
 {
@@ -10,8 +11,15 @@ namespace CustomUI
     [System.Serializable]
     public class WhatsNewListSource : IBaseListSource
     {
-        public Texture contentImage;
-        public string mainContent;
-        public string subContent;
+		public int id;
+		public int categoryId;
+        public string title;
+        public string description;
+		public string imageURL;
+		public string backgroundImageURL;
+		public string videoURL;
+		public string linkURL;
+		public DateTime createdTimeStamp;
+		public DateTime lastModifiedTimeStamp;
     }
 }

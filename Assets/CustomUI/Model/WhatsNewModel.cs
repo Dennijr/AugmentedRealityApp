@@ -13,9 +13,24 @@ namespace CustomUI
         public override void Copy(WhatsNewListSource source)
         {
             base.Copy(source);
-            this.backgroundImage.texture = source.contentImage;
-            this.mainContent.text = source.mainContent;
-            this.subContent.text = source.subContent;
+            this.mainContent.text = source.title;
+            this.subContent.text = source.description;
         }
-    }
+
+		public override IEnumerator LoadModel(WhatsNewListSource source)
+		{
+			WWW www = new WWW(source.backgroundImageURL);
+			
+			yield return www;
+			
+			Texture2D texture = new Texture2D (1, 1);
+
+			www.LoadImageIntoTexture(texture);
+			backgroundImage.texture = texture;
+
+			www.Dispose();
+			www = null;
+
+		}
+	}
 }

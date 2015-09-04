@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using MaterialUI;
+using System.Collections;
 
 namespace CustomUI
 {
@@ -22,6 +23,8 @@ namespace CustomUI
         {
             base.Start();
             listController = gameObject.GetComponent<WhatsNewListController>();
+
+			source = new List<WhatsNewListSource>();
             if (listController != null) listController.ListItemClickedHandler += listController_ListItemClickedHandler;
         }
 
@@ -35,17 +38,18 @@ namespace CustomUI
             base.OnNavigatedTo(e);
             if (e.navigationType == NavigationType.New)
             {
-                if (source != null && source.Count > 0 && listController != null)
+                if (source != null  && listController != null)
                 {
-                    if (listController.GetCount() == 0) listController.AddItems(source);
+                    if (listController.GetCount() == 0) listController.ReloadWhatsNewContent();
                 }
+
                 ListSection.SetActive(true);
                 DetailsSection.SetActive(false);
             }
-        }
-
-        // Hide details section on back key press
-        public override void OnBackKeyPress(CancellationEventArgs e)
+        }	
+	
+		// Hide details section on back key press
+		public override void OnBackKeyPress(CancellationEventArgs e)
         {
             base.OnBackKeyPress(e);
             if (DetailsSection.activeSelf)

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 namespace CustomUI
 {
@@ -14,5 +15,10 @@ namespace CustomUI
         {
 
         }
+
+		public virtual IEnumerator LoadModel(S source)
+		{
+			yield return null;
+		}
     }
 }

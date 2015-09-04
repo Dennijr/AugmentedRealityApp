@@ -39,6 +39,7 @@ namespace CustomUI
                 newModel.thisButton.onClick.AddListener(() => ListItemClicked(newModel));
                 newModel.transform.SetParent(parentPanel);
                 newModel.transform.localScale = new Vector3(1, 1, 1);
+				StartCoroutine(newModel.LoadModel(source));
                 return true;
             }
             catch { }
@@ -65,5 +66,23 @@ namespace CustomUI
         {
             return parentPanel.childCount;
         }
-    }
+
+		public bool RemoveAllItems()
+		{
+			try {
+				for (var i = 0; i < parentPanel.childCount; i++)
+				{
+					var item = parentPanel.GetChild(i);
+					if (item != null)
+					{
+						item.transform.parent = null;
+						Destroy(item);
+					}
+				}
+				return true;
+			}
+			catch {}
+			return false;
+		}
+	}
 }
