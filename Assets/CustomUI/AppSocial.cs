@@ -10,7 +10,7 @@ namespace CustomUI
         private const string TWEET_LANGUAGE = "en"; 
 
         //Replace with the facebook app id
-        private const string FACEBOOK_APP_ID = "123456789000";
+		private const string FACEBOOK_APP_ID = "1488638048114914";
         private const string FACEBOOK_URL = "http://www.facebook.com/dialog/feed";
 
         public static void ShareToTwitter()
@@ -52,12 +52,12 @@ namespace CustomUI
         //public static void ShareToFacebook(string linkParameter, string nameParameter, string captionParameter, string descriptionParameter, string pictureParameter, string redirectParameter)
         public static void ShareToFacebook()
         {
-            string linkParameter = "TEST";
-            string nameParameter = "TEST";
-            string captionParameter = "TEST";
-            string descriptionParameter = "TEST";
-            string pictureParameter = "TEST";
-            string redirectParameter = "TEST";
+            string linkParameter = @"http://activatear.com";
+            string nameParameter = "Name Parameter ";
+            string captionParameter = "Caption";
+            string descriptionParameter = "Description Parameter";
+			string pictureParameter = @"http://www.activatear.com/activatearvideos/raptor.jpg";
+            string redirectParameter = @"http://www.facebook.com/";
             Application.OpenURL(FACEBOOK_URL + "?app_id=" + FACEBOOK_APP_ID +
             "&link=" + WWW.EscapeURL(linkParameter) +
             "&name=" + WWW.EscapeURL(nameParameter) +
