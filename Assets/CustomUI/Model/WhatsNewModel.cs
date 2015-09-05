@@ -9,10 +9,12 @@ namespace CustomUI
         public RawImage backgroundImage;
         public Text mainContent;
         public Text subContent;
+		public int id;
 
         public override void Copy(WhatsNewListSource source)
         {
             base.Copy(source);
+			this.id = source.id;
             this.mainContent.text = source.title;
             this.subContent.text = source.description;
         }

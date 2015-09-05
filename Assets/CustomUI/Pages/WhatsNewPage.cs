@@ -11,9 +11,9 @@ namespace CustomUI
         public GameObject ListSection;
         // Details about the item
         public GameObject DetailsSection;
-        // List of items to be displayed in the whatsnew page
-        // For now making this public so that it can be populated through inspector
-        public List<WhatsNewListSource> source;
+		// Whats new details shower
+		[HideInInspector]
+		public WhatsNewDetails whatsNewDetails;
 
         // List controller for whatsnew. This script is attached to this game object.(Whatsnew page)
         // Get a reference for it to interact with it
@@ -23,8 +23,8 @@ namespace CustomUI
         {
             base.Start();
             listController = gameObject.GetComponent<WhatsNewListController>();
-
-			source = new List<WhatsNewListSource>();
+			if (DetailsSection != null)
+				whatsNewDetails = DetailsSection.GetComponent<WhatsNewDetails> ();
             if (listController != null) listController.ListItemClickedHandler += listController_ListItemClickedHandler;
         }
 
@@ -38,7 +38,7 @@ namespace CustomUI
             base.OnNavigatedTo(e);
             if (e.navigationType == NavigationType.New)
             {
-                if (source != null  && listController != null)
+                if (listController != null)
                 {
                     if (listController.GetCount() == 0) listController.ReloadWhatsNewContent();
                 }
@@ -66,7 +66,11 @@ namespace CustomUI
 
         public void ShowContentDetails(WhatsNewModel thisModel)
         {
-            DetailsSection.SetActive(true);
+			var contentsource = listController.GetSource (thisModel.id);
+			if (contentsource != null) {
+				DetailsSection.SetActive (true);
+				whatsNewDetails.LoadContent (contentsource);
+			}
         }
     }
 }

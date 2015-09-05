@@ -18,7 +18,7 @@ public class CanvasConstants : MonoBehaviour
 
     private static RectTransform canvasRect;
 	[HideInInspector]
-	public static string serverURL = @"http://192.168.1.34/activatear/WhatsNewService.php?timestamp=2015-09-01";
+	public static string serverURL = @"http://192.168.1.38/activatear/services/whatsnew.php";
 
     // Use this for initialization
     void Start()
