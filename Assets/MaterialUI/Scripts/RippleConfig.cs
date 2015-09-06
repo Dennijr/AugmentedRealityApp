@@ -64,6 +64,7 @@ namespace MaterialUI
 		private Canvas theCanvas;
 		private Camera theCamera;
 		private Image thisImage;
+        private RawImage thisRawImage;
 		private bool worldSpace;
 
 		protected Color normalColor;
@@ -82,12 +83,13 @@ namespace MaterialUI
 		public void Setup()
 		{
 			thisImage = gameObject.GetComponent<Image>();
+            thisRawImage = gameObject.GetComponent<RawImage>();
 		}
 
 		void Awake()
 		{
 			RippleControl.Initialize();
-			thisImage = gameObject.GetComponent<Image>();
+            Setup();
 		}
 
 		void Start()
@@ -129,52 +131,70 @@ namespace MaterialUI
 			}
 		}
 
+        private Color GetImageColor()
+        {
+            return thisImage != null ? thisImage.color : thisRawImage.color;
+        }
+
+        private void SetImageColor(Color color)
+        {
+            if (thisImage != null)
+            {
+                thisImage.color = color;
+            }
+            else if (thisRawImage != null)
+            {
+                thisRawImage.color = color;
+            }
+        }
+
 		private void RefreshContinued()
 		{
-			normalColor = thisImage.color;
+            normalColor = GetImageColor();
 
 			if (highlightWhen != HighlightActive.Never)
 			{
 				highlightColor = rippleColor;
+                highlightColor.a = 0.8f;
 
-				HSBColor highlightColorHSB = HSBColor.FromColor(highlightColor);
-				HSBColor normalColorHSB = HSBColor.FromColor(normalColor);
+                //HSBColor highlightColorHSB = HSBColor.FromColor(highlightColor);
+                //HSBColor normalColorHSB = HSBColor.FromColor(normalColor);
 
-				if (highlightColorHSB.s <= 0.05f)
-				{
-					if (highlightColorHSB.b > 0.5f)
-					{
-						if (normalColorHSB.b > 0.9f)
-						{
-							highlightColorHSB.h = normalColorHSB.h;
-							highlightColorHSB.s = normalColorHSB.s - 0.1f;
-							highlightColorHSB.b = normalColorHSB.b + 0.2f;
-						}
-						else
-						{
-							highlightColorHSB.h = normalColorHSB.h;
-							highlightColorHSB.s = normalColorHSB.s;
-							highlightColorHSB.b = normalColorHSB.b + 0.2f;
-						}
+                //if (highlightColorHSB.s <= 0.05f)
+                //{
+                //    if (highlightColorHSB.b > 0.5f)
+                //    {
+                //        if (normalColorHSB.b > 0.9f)
+                //        {
+                //            highlightColorHSB.h = normalColorHSB.h;
+                //            highlightColorHSB.s = normalColorHSB.s - 0.1f;
+                //            highlightColorHSB.b = normalColorHSB.b + 0.2f;
+                //        }
+                //        else
+                //        {
+                //            highlightColorHSB.h = normalColorHSB.h;
+                //            highlightColorHSB.s = normalColorHSB.s;
+                //            highlightColorHSB.b = normalColorHSB.b + 0.2f;
+                //        }
 						
-					}
-					else
-					{
-						highlightColorHSB.h = normalColorHSB.h;
-						highlightColorHSB.s = normalColorHSB.s;
-						highlightColorHSB.b = normalColorHSB.b - 0.15f;
-					}
+                //    }
+                //    else
+                //    {
+                //        highlightColorHSB.h = normalColorHSB.h;
+                //        highlightColorHSB.s = normalColorHSB.s;
+                //        highlightColorHSB.b = normalColorHSB.b - 0.15f;
+                //    }
 
-					highlightColor = HSBColor.ToColor(highlightColorHSB);
-					highlightColor.a = normalColor.a;
-				}
-				else
-				{
-					highlightColor.r = Anim.Linear(normalColor.r, highlightColor.r, 0.2f, 1f);
-					highlightColor.g = Anim.Linear(normalColor.g, highlightColor.g, 0.2f, 1f);
-					highlightColor.b = Anim.Linear(normalColor.b, highlightColor.b, 0.2f, 1f);
-					highlightColor.a = Anim.Linear(normalColor.a, highlightColor.a, 0.2f, 1f);
-				}
+                //    highlightColor = HSBColor.ToColor(highlightColorHSB);
+                //    highlightColor.a = normalColor.a;
+                //}
+                //else
+                //{
+                //    highlightColor.r = Anim.Linear(normalColor.r, highlightColor.r, 0.2f, 1f);
+                //    highlightColor.g = Anim.Linear(normalColor.g, highlightColor.g, 0.2f, 1f);
+                //    highlightColor.b = Anim.Linear(normalColor.b, highlightColor.b, 0.2f, 1f);
+                //    highlightColor.a = Anim.Linear(normalColor.a, highlightColor.a, 0.2f, 1f);
+                //}
 			}
 
 			animationDuration = 4 / rippleSpeed;
@@ -188,11 +208,11 @@ namespace MaterialUI
 
 				if (animDeltaTime < animationDuration)
 				{
-					thisImage.color = Anim.Quint.Out(currentColor, highlightColor, animDeltaTime, animationDuration);
+					SetImageColor(Anim.Quint.Out(currentColor, highlightColor, animDeltaTime, animationDuration));
 				}
 				else
 				{
-					thisImage.color = highlightColor;
+					SetImageColor(highlightColor);
 					state = 0;
 				}
 			}
@@ -202,11 +222,11 @@ namespace MaterialUI
 
 				if (animDeltaTime < animationDuration)
 				{
-					thisImage.color = Anim.Quint.Out(currentColor, normalColor, animDeltaTime, animationDuration);
+					SetImageColor(Anim.Quint.Out(currentColor, normalColor, animDeltaTime, animationDuration));
 				}
 				else
 				{
-					thisImage.color = normalColor;
+					SetImageColor(normalColor);
 					state = 0;
 				}
 			}
@@ -216,7 +236,7 @@ namespace MaterialUI
 		{
 			if (highlightWhen == HighlightActive.Hovered)
 			{
-				currentColor = thisImage.color;
+                currentColor = GetImageColor();
 				animStartTime = Time.realtimeSinceStartup;
 				state = 1;
 			}
@@ -234,7 +254,7 @@ namespace MaterialUI
 
 			if (highlightWhen == HighlightActive.Clicked)
 			{
-				currentColor = thisImage.color;
+                currentColor = GetImageColor();
 				animStartTime = Time.realtimeSinceStartup;
 				state = 1;
 			}
@@ -254,7 +274,7 @@ namespace MaterialUI
 
 			if (highlightWhen != HighlightActive.Never)
 			{
-				currentColor = thisImage.color;
+                currentColor = GetImageColor();
 				animStartTime = Time.realtimeSinceStartup;
 				state = 2;
 			}
@@ -276,7 +296,7 @@ namespace MaterialUI
 
 			if (highlightWhen != HighlightActive.Never)
 			{
-				currentColor = thisImage.color;
+                currentColor = GetImageColor();
 				animStartTime = Time.realtimeSinceStartup;
 				state = 2;
 			}
