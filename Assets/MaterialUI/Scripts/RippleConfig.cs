@@ -155,46 +155,45 @@ namespace MaterialUI
 			if (highlightWhen != HighlightActive.Never)
 			{
 				highlightColor = rippleColor;
-                highlightColor.a = 0.8f;
 
-                //HSBColor highlightColorHSB = HSBColor.FromColor(highlightColor);
-                //HSBColor normalColorHSB = HSBColor.FromColor(normalColor);
+                HSBColor highlightColorHSB = HSBColor.FromColor(highlightColor);
+                HSBColor normalColorHSB = HSBColor.FromColor(normalColor);
 
-                //if (highlightColorHSB.s <= 0.05f)
-                //{
-                //    if (highlightColorHSB.b > 0.5f)
-                //    {
-                //        if (normalColorHSB.b > 0.9f)
-                //        {
-                //            highlightColorHSB.h = normalColorHSB.h;
-                //            highlightColorHSB.s = normalColorHSB.s - 0.1f;
-                //            highlightColorHSB.b = normalColorHSB.b + 0.2f;
-                //        }
-                //        else
-                //        {
-                //            highlightColorHSB.h = normalColorHSB.h;
-                //            highlightColorHSB.s = normalColorHSB.s;
-                //            highlightColorHSB.b = normalColorHSB.b + 0.2f;
-                //        }
-						
-                //    }
-                //    else
-                //    {
-                //        highlightColorHSB.h = normalColorHSB.h;
-                //        highlightColorHSB.s = normalColorHSB.s;
-                //        highlightColorHSB.b = normalColorHSB.b - 0.15f;
-                //    }
+                if (highlightColorHSB.s <= 0.05f)
+                {
+                    if (highlightColorHSB.b > 0.5f)
+                    {
+                        if (normalColorHSB.b > 0.9f)
+                        {
+                            highlightColorHSB.h = normalColorHSB.h;
+                            highlightColorHSB.s = normalColorHSB.s - 0.1f;
+                            highlightColorHSB.b = normalColorHSB.b + 0.2f;
+                        }
+                        else
+                        {
+                            highlightColorHSB.h = normalColorHSB.h;
+                            highlightColorHSB.s = normalColorHSB.s;
+                            highlightColorHSB.b = normalColorHSB.b + 0.2f;
+                        }
 
-                //    highlightColor = HSBColor.ToColor(highlightColorHSB);
-                //    highlightColor.a = normalColor.a;
-                //}
-                //else
-                //{
-                //    highlightColor.r = Anim.Linear(normalColor.r, highlightColor.r, 0.2f, 1f);
-                //    highlightColor.g = Anim.Linear(normalColor.g, highlightColor.g, 0.2f, 1f);
-                //    highlightColor.b = Anim.Linear(normalColor.b, highlightColor.b, 0.2f, 1f);
-                //    highlightColor.a = Anim.Linear(normalColor.a, highlightColor.a, 0.2f, 1f);
-                //}
+                    }
+                    else
+                    {
+                        highlightColorHSB.h = normalColorHSB.h;
+                        highlightColorHSB.s = normalColorHSB.s;
+                        highlightColorHSB.b = normalColorHSB.b - 0.15f;
+                    }
+
+                    highlightColor = HSBColor.ToColor(highlightColorHSB);
+                    highlightColor.a = normalColor.a;
+                }
+                else
+                {
+                    highlightColor.r = Anim.Linear(normalColor.r, highlightColor.r, 0.2f, 1f);
+                    highlightColor.g = Anim.Linear(normalColor.g, highlightColor.g, 0.2f, 1f);
+                    highlightColor.b = Anim.Linear(normalColor.b, highlightColor.b, 0.2f, 1f);
+                    highlightColor.a = Anim.Linear(normalColor.a, highlightColor.a, 0.2f, 1f);
+                }
 			}
 
 			animationDuration = 4 / rippleSpeed;

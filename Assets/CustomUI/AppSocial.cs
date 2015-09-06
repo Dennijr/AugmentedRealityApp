@@ -16,7 +16,7 @@ namespace CustomUI
         public static void ShareToTwitter()
         {
             string textToDisplay = "Posting from activate AR";
-            Application.OpenURL(TWITTER_ADDRESS + "?text=" + WWW.EscapeURL(textToDisplay) + "&amp;lang=" + WWW.EscapeURL(TWEET_LANGUAGE));
+            Application.OpenURL(TWITTER_ADDRESS + "?text=" + EscapeURL(textToDisplay) + "&amp;lang=" + EscapeURL(TWEET_LANGUAGE));
         }
 
         /*
@@ -59,12 +59,22 @@ namespace CustomUI
 			string pictureParameter = @"http://www.activatear.com/activatearvideos/raptor.jpg";
             string redirectParameter = @"http://www.facebook.com/";
             Application.OpenURL(FACEBOOK_URL + "?app_id=" + FACEBOOK_APP_ID +
-            "&link=" + WWW.EscapeURL(linkParameter) +
-            "&name=" + WWW.EscapeURL(nameParameter) +
-            "&caption=" + WWW.EscapeURL(captionParameter) +
-            "&description=" + WWW.EscapeURL(descriptionParameter) +
-            "&picture=" + WWW.EscapeURL(pictureParameter) +
-            "&redirect_uri=" + WWW.EscapeURL(redirectParameter));
+            "&link=" + EscapeURL(linkParameter) +
+            "&name=" + EscapeURL(nameParameter) +
+            "&caption=" + EscapeURL(captionParameter) +
+            "&description=" + EscapeURL(descriptionParameter) +
+            "&picture=" + EscapeURL(pictureParameter) +
+            "&redirect_uri=" + EscapeURL(redirectParameter));
+        }
+
+        public static void SendEmail(string subject, string body)
+        {
+            Application.OpenURL("mailto:?subject=" + subject + "&body=" + body);
+        }
+
+        public static string EscapeURL(string url)
+        {
+            return EscapeURL(url).Replace("+", "%20");
         }
     }
 }

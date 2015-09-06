@@ -12,8 +12,9 @@ namespace CustomUI
         // Details about the item
         public GameObject DetailsSection;
 		// Whats new details shower
-		[HideInInspector]
-		public WhatsNewDetails whatsNewDetails;
+        public GameObject WhatsNewDetailsPrefab;
+        // This will populated at run time
+        private WhatsNewDetails whatsNewDetails;
 
         // List controller for whatsnew. This script is attached to this game object.(Whatsnew page)
         // Get a reference for it to interact with it
@@ -23,8 +24,6 @@ namespace CustomUI
         {
             base.Start();
             listController = gameObject.GetComponent<WhatsNewListController>();
-			if (DetailsSection != null)
-				whatsNewDetails = DetailsSection.GetComponent<WhatsNewDetails> ();
             if (listController != null) listController.ListItemClickedHandler += listController_ListItemClickedHandler;
         }
 
@@ -54,7 +53,7 @@ namespace CustomUI
             base.OnBackKeyPress(e);
             if (DetailsSection.activeSelf)
             {
-                DetailsSection.SetActive(false);
+                HideContentDetails();
                 e.CancelEvent = true;
             }
         }
@@ -68,9 +67,26 @@ namespace CustomUI
         {
 			var contentsource = listController.GetSource (thisModel.id);
 			if (contentsource != null) {
-				DetailsSection.SetActive (true);
+                var detailsObject = Instantiate(WhatsNewDetailsPrefab) as GameObject;
+                DetailsSection.SetActive(true);
+                detailsObject.transform.SetParent(DetailsSection.transform);
+                // Set default scaling
+                detailsObject.transform.localScale = new Vector3(1, 1, 1);
+                // Set default margin
+                var rectTransform = detailsObject.GetComponent<RectTransform>();
+                rectTransform.offsetMax = new Vector2(0, 0);
+                rectTransform.offsetMin = new Vector2(0, 0);
+                // Activate the prefab with fading animation
+                whatsNewDetails = detailsObject.GetComponent<WhatsNewDetails>();
+                whatsNewDetails.Enable();
 				whatsNewDetails.LoadContent (contentsource);
 			}
+        }
+
+        public void HideContentDetails()
+        {
+            if (whatsNewDetails != null)
+                whatsNewDetails.Disable();
         }
     }
 }
