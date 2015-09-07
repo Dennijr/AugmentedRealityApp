@@ -18,15 +18,10 @@ namespace CustomUI
 
         private CanvasGroup canvasGroup;
 
-        private Texture originalMainTexture, originalDetailTexture;
-
         private string title, description, videoLink, shareLink, readMoreLink;
 
         public void Start()
         {
-            if (MainImage != null) originalMainTexture = MainImage.texture;
-            if (DetailsImage != null) originalDetailTexture = DetailsImage.texture;
-
 			VideoButton.onClick.AddListener(delegate {
 				if (!string.IsNullOrEmpty(videoLink)) OpenURL(videoLink);
 			});
@@ -85,21 +80,6 @@ namespace CustomUI
                 AppSocial.SendEmail(title, description);
         }
 
-        public void Reset()
-        {
-            title = string.Empty;
-            description = string.Empty;
-            videoLink = string.Empty;
-            shareLink = string.Empty;
-            readMoreLink = string.Empty;
-
-            if (originalMainTexture != null) MainImage.texture = originalMainTexture;
-            if (originalDetailTexture != null) DetailsImage.texture = originalDetailTexture;
-
-            if (Title != null) Title.text = string.Empty;
-            if (Description != null) Description.text = string.Empty;
-        }
-
 		void OpenURL(string link)
 		{
 			Application.OpenURL(link);
@@ -112,40 +92,42 @@ namespace CustomUI
             videoLink = source.videoURL;
             readMoreLink = source.linkURL;
 
-
-
+            // set Main image at the top
             if (!string.IsNullOrEmpty(source.backgroundImageURL))
             {
                 StartCoroutine(LoadImage(true, source.backgroundImageURL));
             }
+            // Set title
             if (!string.IsNullOrEmpty(title)) Title.text = title;
+            // Set description
             if (!string.IsNullOrEmpty(description)) Description.text = description;
-            
+            // If video url doesn't exists, delete the game object
+            if (string.IsNullOrEmpty(videoLink))
+            {
+                try
+                {
+                    Destroy(VideoButton.gameObject);
+                }
+                catch { }
+            }
+            // If details image doesn't exitst delete the game object
             if (!string.IsNullOrEmpty(source.imageURL))
             {
-                DetailsImage.gameObject.SetActive(true);
                 StartCoroutine(LoadImage(false, source.imageURL));
             }
             else
             {
-
+                try
+                {
+                    Destroy(DetailsImage.gameObject);
+                }
+                catch { }
             }
-
-			if (source.videoURL != null)
-				videoLink = source.videoURL;
-			else
-				videoLink = null;
-
-			if (source.linkURL != null) 
-				readMoreLink = source.linkURL;
-			else 
-				readMoreLink = null;
-
-
-			if (ScanButton != null)
-			{
-
-			}
+            // If read more link not present remove the object
+            if (string.IsNullOrEmpty(readMoreLink))
+            {
+                Destroy(ReadMoreButton.gameObject);
+            }
 		}
 		
 		private IEnumerator LoadImage(bool isMain, string url)
@@ -162,7 +144,16 @@ namespace CustomUI
             }
             else
             {
-                this.DetailsImage.texture = imageTexture;
+                var width = imageTexture.width;
+                var height = imageTexture.height;
+                if (width > 0 && height > 0)
+                {
+                    var ratio = (CanvasConstants.ReferenceWidth - 20) / width;
+                    var layoutElement = DetailsImage.gameObject.GetComponent<LayoutElement>();
+                    layoutElement.preferredWidth = width * ratio;
+                    layoutElement.preferredHeight = height * ratio;
+                    this.DetailsImage.texture = imageTexture;
+                }
             }
             www.Dispose();
             www = null;

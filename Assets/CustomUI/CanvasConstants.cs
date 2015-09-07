@@ -7,6 +7,9 @@ public class CanvasConstants : MonoBehaviour
 {
     public Canvas canvas;
 
+    public static float ReferenceWidth = 360;
+    public static float ReferenceHeight = 640;
+
     public static event EventHandler resizeHandler;
     public static string appName = "ActivateAR";
     public static string screenShotPath;
