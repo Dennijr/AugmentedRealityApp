@@ -19,7 +19,7 @@ namespace CustomUI
 		public IEnumerator GetAllWhatsNewItems() 
 		{
 
-			WWW www = new WWW(CanvasConstants.serverURL);
+			WWW www = new WWW(CanvasConstants.serverURL + "?request=get");
 			yield return www;
 
 			Debug.Log ("Response: " + www.text);

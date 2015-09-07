@@ -15,12 +15,18 @@ namespace CustomUI
         public Button ScanButton;
         public Button ShareButton;
         public Button EmailButton;
+		public Button LikeButton;
+		public Button CommentButton;
+
+		public GameObject CommentPopup;
+		public InputField CommentInput;
 
         private CanvasGroup canvasGroup;
 
+		private int id;
         private string title, description, videoLink, shareLink, readMoreLink;
 
-        public void Start()
+		public void Start()
         {
 			VideoButton.onClick.AddListener(delegate {
 				if (!string.IsNullOrEmpty(videoLink)) OpenURL(videoLink);
@@ -35,14 +41,42 @@ namespace CustomUI
 			});
 
             EmailButton.onClick.AddListener(() => PushEmail());
+
+			LikeButton.onClick.AddListener (() => Like ());
+
+			CommentButton.onClick.AddListener(() => ShowCommentPopup());
 		}
 
-        public void Enable()
+		void OnGUI()
+		{
+			if(CommentInput.isFocused && CommentInput.text != "" && Input.GetKey(KeyCode.Return)) {
+				PostComment();
+			}
+		}
+
+		public void ShowCommentPopup()
+		{
+			Enable (CommentPopup);
+		}
+
+		public void PostComment()
+		{
+			var comment = CommentInput.text;
+			if (!string.IsNullOrEmpty (comment)) {
+				StartCoroutine(PostCommentToServer(comment));
+				CommentInput.text = "";
+				CommentPopup.SetActive(false);
+			}
+		}
+
+        public void Enable(GameObject gObject = null)
         {
-            this.gameObject.SetActive(true);
-            canvasGroup = gameObject.GetComponent<CanvasGroup>();
+			if (gObject == null)
+				gObject = this.gameObject;
+            gObject.SetActive(true);
+            canvasGroup = gObject.GetComponent<CanvasGroup>();
             canvasGroup.alpha = 0;
-            StartCoroutine(FadeIn());
+            StartCoroutine(FadeIn(canvasGroup));
         }
 
         public void Disable()
@@ -51,7 +85,7 @@ namespace CustomUI
         }
 
         float duration = 0.6f;
-        private IEnumerator FadeIn() 
+        private IEnumerator FadeIn(CanvasGroup canvasGroup)
         {
             for (var t = 0.0f; t < duration; t += Time.deltaTime)
             {
@@ -80,6 +114,26 @@ namespace CustomUI
                 AppSocial.SendEmail(title, description);
         }
 
+		private IEnumerator PostLike()
+		{
+			WWW www = new WWW (CanvasConstants.serverURL + "?request=like&id=" + id);
+			yield return www;
+		}
+
+		private IEnumerator PostCommentToServer(string comment)
+		{
+			string url = CanvasConstants.serverURL + "?request=comment&id=" + id + "&comment=" + WWW.EscapeURL(comment);
+			Debug.Log("Posting comment: " +url );
+			WWW www = new WWW (url);
+			yield return www;
+		}
+
+		private void Like ()
+		{
+			StartCoroutine (PostLike());
+			
+		}
+		
 		void OpenURL(string link)
 		{
 			Application.OpenURL(link);
@@ -87,6 +141,7 @@ namespace CustomUI
 
         public void LoadContent(WhatsNewListSource source)
         {
+			id = source.id;
             title = source.title;
             description = source.description;
             videoLink = source.videoURL;
