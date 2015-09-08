@@ -34,7 +34,7 @@ namespace CustomUI
             base.Start();
             try
             {
-                arCamera.SetActive(true);
+                CanvasConstants.SetARCamera(true);
                 Invoke("DisableArCamera", 0.5f);
                 trackableCloudRecoEventHandler = imageTarget.GetComponent<TrackableCloudRecoEventHandler>();
                 trackableCloudRecoEventHandler.OnTrackingLostHandler += trackableCloudRecoEventHandler_OnTrackingLostHandler;
@@ -100,14 +100,14 @@ namespace CustomUI
 
         private void DisableArCamera()
         {
-            arCamera.SetActive(false);
+            CanvasConstants.SetARCamera(false);
         }
 
         private void LoadCamera()
         {
             if (isPageActive)
             {
-                arCamera.SetActive(true);
+                CanvasConstants.SetARCamera(true);
                 cloudRecognition.SetActive(true);
                 imageTarget.SetActive(true);
                 //Delay disabling background or home page contents will be shown till the camera feedback appears
@@ -133,7 +133,7 @@ namespace CustomUI
             trackableCloudRecoEventHandler.isAudioMuted = false;
             SetVolumeButton(true);
             background.SetActive(true);
-            arCamera.SetActive(false);
+            CanvasConstants.SetARCamera(false);
 			streamingIndicator.SetActive(false);
             loadingIndicator.SetActive(false);
             cloudRecognition.SetActive(false);

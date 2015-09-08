@@ -14,6 +14,12 @@ public class CanvasConstants : MonoBehaviour
     public static string appName = "ActivateAR";
     public static string screenShotPath;
 
+    public GameObject ARCamera;
+    public GameObject MainCamera;
+
+    private static GameObject _ARCamera;
+    private static GameObject _MainCamera;
+
     [HideInInspector]
     public static float canvasWidth;
     [HideInInspector]
@@ -30,6 +36,8 @@ public class CanvasConstants : MonoBehaviour
         {
             canvasRect = canvas.GetComponent<RectTransform>();
         }
+        if (ARCamera != null) _ARCamera = ARCamera;
+        if (MainCamera != null) _MainCamera = MainCamera;
         screenShotPath = Application.persistentDataPath;
         Debug.Log(screenShotPath);
     }
@@ -47,6 +55,20 @@ public class CanvasConstants : MonoBehaviour
         }
     }
 
+    public static void SetARCamera(bool on) 
+    {
+        if (_ARCamera == null || _MainCamera == null) return;
+        if (on)
+        {
+            _MainCamera.SetActive(false);
+            _ARCamera.SetActive(true);
+        }
+        else
+        {
+            _ARCamera.SetActive(false);
+            _MainCamera.SetActive(true);
+        }
+    }
 
 	public static IEnumerator LoadRemoteImage(RawImage image, string url)
 	{
