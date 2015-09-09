@@ -8,9 +8,6 @@ namespace CustomUI
 	{
 		private bool loaded = false;
 
-		[HideInInspector]
-		public List<WhatsNewCommentSource> source = new List<WhatsNewCommentSource>();
-
 		public void LoadWhatsNewComments(int whatsNewId) 
 		{
 			if (!loaded)
@@ -20,7 +17,9 @@ namespace CustomUI
 		private IEnumerator GetAllWhatsNewComments (int whatsNewId)
 		{
 			WWW www = new WWW (CanvasConstants.serverURL + "?request=getcomment&id=" + whatsNewId);
+            CanvasConstants.ShowLoading(true);
 			yield return www;
+            CanvasConstants.ShowLoading(false);
 
 			Debug.Log ("Response: " + www.text);
 			if (www.text != null) {
@@ -44,6 +43,7 @@ namespace CustomUI
 				}
 			}
 			AddItems (source);
+            ListContentChanged();
 			loaded = true;
 		}
 	}

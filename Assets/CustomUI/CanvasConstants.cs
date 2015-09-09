@@ -19,10 +19,12 @@ namespace CustomUI
 	    public GameObject ARCamera;
 	    public GameObject MainCamera;
 		public PagesManager PagesManager;
+        public GameObject LoadingIndicator;
 
 	    private static GameObject _ARCamera;
 	    private static GameObject _MainCamera;
 		private static PagesManager _PagesManager;
+        private static GameObject _LoadingIndicator;
 
 	    [HideInInspector]
 	    public static float canvasWidth;
@@ -31,8 +33,8 @@ namespace CustomUI
 
 	    private static RectTransform canvasRect;
 		[HideInInspector]
-//		public static string serverURL = @"http://studio.activatear.com/services/whatsnew.php";
-		public static string serverURL = @"http://10.234.1.216/activatear/services/whatsnew.php";
+        public static string serverURL = @"http://studio.activatear.com/services/whatsnew.php";
+        //public static string serverURL = @"http://10.234.1.216/activatear/services/whatsnew.php";
 
 	    // Use this for initialization
 	    void Start()
@@ -44,16 +46,10 @@ namespace CustomUI
 	        if (ARCamera != null) _ARCamera = ARCamera;
 	        if (MainCamera != null) _MainCamera = MainCamera;
 			if (PagesManager != null) _PagesManager = PagesManager;
+            if (LoadingIndicator != null) _LoadingIndicator = LoadingIndicator;
 	        screenShotPath = Application.persistentDataPath;
 	        Debug.Log(screenShotPath);
 	    }
-
-		public static void Navigate(string page)
-		{
-			if (_PagesManager != null) {
-				_PagesManager.Navigate(page);
-			}
-		}
 
 	    void Update()
 	    {
@@ -67,6 +63,14 @@ namespace CustomUI
 	            Debug.Log("Change in canvas size detected : " + canvasWidth + " , " + canvasHeight);
 	        }
 	    }
+
+        public static void Navigate(string page)
+        {
+            if (_PagesManager != null)
+            {
+                _PagesManager.Navigate(page);
+            }
+        }
 
 	    public static void SetARCamera(bool on) 
 	    {
@@ -82,6 +86,11 @@ namespace CustomUI
 	            _MainCamera.SetActive(true);
 	        }
 	    }
+
+        public static void ShowLoading(bool on)
+        {
+            if (_LoadingIndicator != null) _LoadingIndicator.SetActive(on);
+        }
 
 		public static IEnumerator LoadRemoteImage(RawImage image, string url)
 		{

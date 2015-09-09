@@ -9,12 +9,10 @@ namespace CustomUI
     {
         string path;
         string[] files;
-        List<MyPicsListSource> source;
 
         public override void Start()
         {
             base.Start();
-            source = new List<MyPicsListSource>();
             path = FileManager.GetScreenShotPath();
         }
 

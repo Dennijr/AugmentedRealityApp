@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CustomUI
 {
@@ -24,16 +25,22 @@ namespace CustomUI
         public M currentModel;
         // Event handler when the list item is clicked
         public event EventHandler ListItemClickedHandler;
+        // When no item found text to display
+        public GameObject NoContentText;
+        // List of source items
+        [HideInInspector]
+        public List<S> source = new List<S>();
 
         public virtual void Start()
         {
-
+            ShowNoContent(false);
         }
 
         public bool AddItem(S source)
         {
             try
             {
+                ShowNoContent(false);
                 GameObject newElement = Instantiate(view) as GameObject;
                 M newModel = newElement.GetComponent<M>();
                 newModel.Copy(source);
@@ -80,10 +87,21 @@ namespace CustomUI
 						Destroy(item);
 					}
 				}
+                ListContentChanged();
 				return true;
 			}
 			catch {}
 			return false;
 		}
+
+        protected void ListContentChanged()
+        {
+            ShowNoContent(source.Count == 0);
+        }
+
+        public void ShowNoContent(bool show)
+        {
+            if (NoContentText != null) NoContentText.SetActive(show);
+        }
 	}
 }

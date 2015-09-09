@@ -13,7 +13,6 @@ namespace CustomUI
         public GameObject background;
         public GameObject cloudRecognition;
         public GameObject imageTarget;
-        public GameObject loadingIndicator;
 		public GameObject streamingIndicator;
 
         public GameObject sharePopup;
@@ -87,13 +86,13 @@ namespace CustomUI
 
         public override void OnNavigatingTo(NavigationEventArgs e)
         {
-			//loadingIndicator.SetActive (true);
+			//CanvasConstants.ShowLoading (true);
         }
 
         public override void OnNavigatedTo(NavigationEventArgs e)
         {
             isPageActive = true;
-            loadingIndicator.SetActive(true);
+            CanvasConstants.ShowLoading(true);
             //Delay camera load so that the page transition effect finishes
             Invoke("LoadCamera", 0.5f);
         }
@@ -118,7 +117,7 @@ namespace CustomUI
         private void ShowCamera()
         {
             background.SetActive(false);
-            loadingIndicator.SetActive(false);
+            CanvasConstants.ShowLoading(false);
         }
 
         public override void OnNavigatingFrom(NavigationEventArgs e)
@@ -135,7 +134,7 @@ namespace CustomUI
             background.SetActive(true);
             CanvasConstants.SetARCamera(false);
 			streamingIndicator.SetActive(false);
-            loadingIndicator.SetActive(false);
+            CanvasConstants.ShowLoading(false);
             cloudRecognition.SetActive(false);
             imageTarget.SetActive(false);
             SetFlash(false);
