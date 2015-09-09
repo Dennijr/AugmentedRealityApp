@@ -20,6 +20,7 @@ namespace CustomUI
         // The panel to which the list items are added
         public Transform parentPanel;
         // Model of the item clicked
+		[HideInInspector]
         public M currentModel;
         // Event handler when the list item is clicked
         public event EventHandler ListItemClickedHandler;

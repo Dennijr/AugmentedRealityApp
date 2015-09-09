@@ -21,7 +21,7 @@ namespace CustomUI
 		public GameObject CommentPopup;
 		public InputField CommentInput;
 
-        private CanvasGroup canvasGroup;
+        
 
 		private int id;
         private string title, description, videoLink, shareLink, readMoreLink;
@@ -45,6 +45,8 @@ namespace CustomUI
 			LikeButton.onClick.AddListener (() => Like ());
 
 			CommentButton.onClick.AddListener(() => ShowCommentPopup());
+
+			ScanButton.onClick.AddListener(() => { CanvasConstants.Navigate("Scan"); });
 		}
 
 		void OnGUI()
@@ -56,7 +58,12 @@ namespace CustomUI
 
 		public void ShowCommentPopup()
 		{
+			if (CommentPopup == null)
+				return;
+			var commentController = CommentPopup.GetComponent<WhatsNewCommentController>();
 			Enable (CommentPopup);
+			if (commentController != null)
+				commentController.LoadWhatsNewComments (id);
 		}
 
 		public void PostComment()
@@ -74,14 +81,15 @@ namespace CustomUI
 			if (gObject == null)
 				gObject = this.gameObject;
             gObject.SetActive(true);
-            canvasGroup = gObject.GetComponent<CanvasGroup>();
+            var canvasGroup = gObject.GetComponent<CanvasGroup>();
             canvasGroup.alpha = 0;
             StartCoroutine(FadeIn(canvasGroup));
         }
 
         public void Disable()
         {
-            StartCoroutine(FadeOut());
+			var canvasGroup = this.gameObject.GetComponent<CanvasGroup>();
+            StartCoroutine(FadeOut(canvasGroup));
         }
 
         float duration = 0.6f;
@@ -95,7 +103,7 @@ namespace CustomUI
             canvasGroup.alpha = 1;
         }
 
-        private IEnumerator FadeOut()
+        private IEnumerator FadeOut(CanvasGroup canvasGroup)
         {
             for (var t = duration; t >= 0.0f; t -= Time.deltaTime)
             {
