@@ -7,6 +7,7 @@ namespace CustomUI
 	public class WhatsNewCommentController : BaseListController<WhatsNewCommentModel, WhatsNewCommentSource> 
 	{
 		private bool loaded = false;
+        private int whatsNewId;
 
 		public void LoadWhatsNewComments(int whatsNewId) 
 		{
@@ -14,8 +15,19 @@ namespace CustomUI
 				StartCoroutine(GetAllWhatsNewComments(whatsNewId));
 		}
 
+        public void AddComment(string text)
+        {
+            var comment = new WhatsNewCommentSource();
+            comment.id = 0;
+            comment.whatsnewid = whatsNewId;
+            comment.comment = text;
+            source.Add(comment);
+            AddItem(comment);
+        }
+
 		private IEnumerator GetAllWhatsNewComments (int whatsNewId)
 		{
+            this.whatsNewId = whatsNewId;
 			WWW www = new WWW (CanvasConstants.serverURL + "?request=getcomment&id=" + whatsNewId);
             CanvasConstants.ShowLoading(true);
 			yield return www;

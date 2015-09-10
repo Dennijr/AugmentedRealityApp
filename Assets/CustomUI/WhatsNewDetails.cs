@@ -15,15 +15,16 @@ namespace CustomUI
         public Button ScanButton;
         public Button ShareButton;
         public Button EmailButton;
+
 		public Button LikeButton;
 		public Button CommentButton;
 
 		public GameObject CommentPopup;
 		public InputField CommentInput;
 
-        
+        private WhatsNewCommentController commentController;
 
-		private int id;
+        private int id, likecount, commentcount;
         private string title, description, videoLink, shareLink, readMoreLink;
 
 		public void Start()
@@ -60,19 +61,33 @@ namespace CustomUI
 		{
 			if (CommentPopup == null)
 				return;
-			var commentController = CommentPopup.GetComponent<WhatsNewCommentController>();
+			commentController = CommentPopup.GetComponent<WhatsNewCommentController>();
 			Enable (CommentPopup);
 			if (commentController != null)
 				commentController.LoadWhatsNewComments (id);
 		}
+
+        public bool CanNavigateBack()
+        {
+            if (CommentPopup.activeSelf)
+            {
+                CloseCommentPopup();
+                return false;
+            }
+            return true;
+        }
+
+        public void CloseCommentPopup()
+        {
+            CanvasConstants.ShowLoading(false);
+            Disable(CommentPopup, false);
+        }
 
 		public void PostComment()
 		{
 			var comment = CommentInput.text;
 			if (!string.IsNullOrEmpty (comment)) {
 				StartCoroutine(PostCommentToServer(comment));
-				CommentInput.text = "";
-				CommentPopup.SetActive(false);
 			}
 		}
 
@@ -86,10 +101,12 @@ namespace CustomUI
             StartCoroutine(FadeIn(canvasGroup));
         }
 
-        public void Disable()
+        public void Disable(GameObject gObject = null, bool deleteGameObject = true)
         {
-			var canvasGroup = this.gameObject.GetComponent<CanvasGroup>();
-            StartCoroutine(FadeOut(canvasGroup));
+            if (gObject == null)
+                gObject = this.gameObject;
+            var canvasGroup = gObject.GetComponent<CanvasGroup>();
+            StartCoroutine(FadeOut(canvasGroup, deleteGameObject));
         }
 
         float duration = 0.6f;
@@ -103,7 +120,7 @@ namespace CustomUI
             canvasGroup.alpha = 1;
         }
 
-        private IEnumerator FadeOut(CanvasGroup canvasGroup)
+        private IEnumerator FadeOut(CanvasGroup canvasGroup, bool deleteGameObject)
         {
             for (var t = duration; t >= 0.0f; t -= Time.deltaTime)
             {
@@ -111,9 +128,16 @@ namespace CustomUI
                 yield return null;
             }
             canvasGroup.alpha = 0;
-            this.gameObject.transform.parent.gameObject.SetActive(false);
-            this.gameObject.transform.SetParent(null);
-            Destroy(this.gameObject);
+            if (deleteGameObject)
+            {
+                canvasGroup.transform.parent.gameObject.SetActive(false);
+                canvasGroup.transform.SetParent(null);
+                Destroy(canvasGroup.gameObject);
+            }
+            else
+            {
+                canvasGroup.gameObject.SetActive(false);
+            }
         }
 
         private void PushEmail()
@@ -126,6 +150,11 @@ namespace CustomUI
 		{
 			WWW www = new WWW (CanvasConstants.serverURL + "?request=like&id=" + id);
 			yield return www;
+            if (www != null)
+            {
+                LikeButton.transform.Find("Image").GetComponent<ImageToggle>().SetSprite(false);
+                SetCount(LikeButton.transform.Find("Text").GetComponent<Text>(), ++likecount);
+            }
 		}
 
 		private IEnumerator PostCommentToServer(string comment)
@@ -134,12 +163,32 @@ namespace CustomUI
 			Debug.Log("Posting comment: " +url );
 			WWW www = new WWW (url);
 			yield return www;
+            if (www != null)
+            {
+                CommentInput.text = "";
+                commentController.AddComment(comment);
+                SetCount(CommentButton.transform.Find("Text").GetComponent<Text>(), ++likecount);
+            }
 		}
+
+        private void SetCount(Text text, int count)
+        {
+            if (count < 1000)
+            {
+                text.text = count.ToString();
+            }
+            else if (count < 10000)
+            {
+                count = count / 100;
+                var fract = count % 10;
+                count = count / 10;
+                text.text = count + "." + fract + "k";
+            }
+        }
 
 		private void Like ()
 		{
 			StartCoroutine (PostLike());
-			
 		}
 		
 		void OpenURL(string link)

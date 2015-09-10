@@ -45,7 +45,13 @@ namespace CustomUI
                 ListSection.SetActive(true);
                 DetailsSection.SetActive(false);
             }
-        }	
+        }
+
+        public override void OnNavigatingFrom(NavigationEventArgs e)
+        {
+            base.OnNavigatingFrom(e);
+            CanvasConstants.ShowLoading(false);
+        }
 	
 		// Hide details section on back key press
 		public override void OnBackKeyPress(CancellationEventArgs e)
@@ -85,7 +91,7 @@ namespace CustomUI
 
         public void HideContentDetails()
         {
-            if (whatsNewDetails != null)
+            if (whatsNewDetails != null && whatsNewDetails.CanNavigateBack())
                 whatsNewDetails.Disable();
         }
     }
