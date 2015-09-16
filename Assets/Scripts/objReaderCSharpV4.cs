@@ -60,8 +60,8 @@ class objReaderCSharpV4 : MonoBehaviour {
 	
 	// Use this for initialization
 	public IEnumerator Init (string gameObjectName) {
-		_textFieldString = CloudRecoEventHandler.metadata["imagelocation"].str.Replace("\\", "");
-		_textureLink = CloudRecoEventHandler.metadata ["texturelocation"].str.Replace ("\\", "");
+		_textFieldString = CloudRecoEventHandler.metadata.materialurl;
+		_textureLink = CloudRecoEventHandler.metadata.textureurl;
 		LoadingSpinner = new Texture ();
 		yield return StartCoroutine(SomeFunction(gameObjectName));
 	}

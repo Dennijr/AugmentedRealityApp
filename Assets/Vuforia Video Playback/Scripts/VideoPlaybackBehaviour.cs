@@ -148,8 +148,7 @@ public class VideoPlaybackBehaviour : MonoBehaviour
         else
         {
             // Set the current state to Not Ready
-            HandleStateChange(VideoPlayerHelper.MediaState.NOT_READY);
-            mCurrentState = VideoPlayerHelper.MediaState.NOT_READY;
+            SetNotReady();
         }
         // Create the video player and set the filename
         mVideoPlayer = new VideoPlayerHelper();
@@ -303,9 +302,14 @@ public class VideoPlaybackBehaviour : MonoBehaviour
             mIsPrepared = false;
 
             // Set the current state to Not Ready
-            HandleStateChange(VideoPlayerHelper.MediaState.NOT_READY);
-            mCurrentState = VideoPlayerHelper.MediaState.NOT_READY;
+            SetNotReady();
         }
+    }
+
+    public void SetNotReady()
+    {
+        HandleStateChange(VideoPlayerHelper.MediaState.NOT_READY);
+        mCurrentState = VideoPlayerHelper.MediaState.NOT_READY;
     }
 
 
@@ -501,7 +505,7 @@ public class VideoPlaybackBehaviour : MonoBehaviour
 
     IEnumerator DelayVideoPlayback()
     {
-        int numFramesToDelay = (int)(1.0f / Time.fixedDeltaTime);
+        int numFramesToDelay = (int)(0.1f / Time.fixedDeltaTime);
         for (int i = 0; i < numFramesToDelay; i++)
             yield return null;
 

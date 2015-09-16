@@ -13,6 +13,8 @@ namespace AssemblyCSharp
     {
         #region PRIVATE_MEMBER_VARIABLES
 
+        private int currentMetadataId;
+
         private ImageTargetBehaviour mImageTargetBehaviour = null;
 
         private TrackableBehaviour mTrackableBehaviour;
@@ -58,7 +60,7 @@ namespace AssemblyCSharp
         {
             yield return null;
             bool nowVideoPlaying = (videoCurrentState == VideoPlayerHelper.MediaState.PLAYING || videoCurrentState == VideoPlayerHelper.MediaState.PLAYING_FULLSCREEN);
-            if ((isVideoPlaying != nowVideoPlaying) && CloudRecoEventHandler.metadata["description"].str == "video")
+            if ((isVideoPlaying != nowVideoPlaying) && CloudRecoEventHandler.metadata.type == "video")
             {
                 if (nowVideoPlaying)
                 {
@@ -87,7 +89,7 @@ namespace AssemblyCSharp
                 {
                     if (OnTrackingFoundHandler != null) OnTrackingFoundHandler(this, new EventArgs());
                 }
-                if (!nowVideoPlaying && !mLostTracking && !videoFinished && CloudRecoEventHandler.metadata["description"].str == "video")
+                if (!nowVideoPlaying && !mLostTracking && !videoFinished && CloudRecoEventHandler.metadata.type == "video")
                 {
                     if (OnVideoLoadHandler != null) OnVideoLoadHandler(this, new EventArgs());
                 }
@@ -135,7 +137,7 @@ namespace AssemblyCSharp
                 overlayObject.transform.position = screenPoint;
             }
 
-			if (CloudRecoEventHandler.metadata != null && CloudRecoEventHandler.metadata["description"].str == "video")
+			if (CloudRecoEventHandler.metadata != null && CloudRecoEventHandler.metadata.type == "video")
             {
                 if (video == null) return;
 
@@ -149,8 +151,14 @@ namespace AssemblyCSharp
                 if (!mLostTracking && mHasBeenFound)
                 {
 
+                    if (video.CurrentState == VideoPlayerHelper.MediaState.READY ||
+                        video.CurrentState == VideoPlayerHelper.MediaState.PAUSED ||
+                        video.CurrentState == VideoPlayerHelper.MediaState.STOPPED)
+                    {
+                        ResumeVideo();
+                    }
                     //if video is playing, get distance to camera.
-                    if (video.CurrentState == VideoPlayerHelper.MediaState.PLAYING)
+                    else if (video.CurrentState == VideoPlayerHelper.MediaState.PLAYING)
                     {
                         distanceToCamera = Vector3.Distance(Camera.main.transform.position, transform.root.position);
                         mCurrentVolume = 1.0f - (Mathf.Clamp01(distanceToCamera * 0.0005f) * 0.5f);
@@ -161,7 +169,7 @@ namespace AssemblyCSharp
                         videoFinished = true;
                         //Loop automatically if marker is visible and video has reached the end
                         //comment this out if you want the play button to appear when the video has reached the end 
-                        Debug.Log("Video Has ended, playing again");
+                        //Debug.Log("Video Has ended, not playing again");
                         //Don't repeat video
                         //PlayVideo(false, 0);
                     }
@@ -173,13 +181,12 @@ namespace AssemblyCSharp
                     if (video.CurrentState == VideoPlayerHelper.MediaState.PLAYING)
                     {
                         //fade out volume from current if marker is lost
-                        Debug.Log(mCurrentVolume - mSecondsSinceLost);
                         SetVolume(Mathf.Clamp01(mCurrentVolume - mSecondsSinceLost));
-                    }
-                    //n.0f is number of seconds before playback stops when marker is lost
-                    if (mSecondsSinceLost > 0.0f)
-                    {
-                        PauseAndUnloadVideo();
+                        //n.0f is number of seconds before playback stops when marker is lost
+                        if (mSecondsSinceLost > 0.0f)
+                        {
+                            PauseAndUnloadVideo();
+                        }
                     }
                     mSecondsSinceLost += Time.deltaTime;
                 }
@@ -198,6 +205,12 @@ namespace AssemblyCSharp
             if (newStatus == TrackableBehaviour.Status.DETECTED ||
                 newStatus == TrackableBehaviour.Status.TRACKED)
             {
+                if (currentMetadataId != CloudRecoEventHandler.metadata.id)
+                {
+                    Debug.Log("New meta data found with id : " + CloudRecoEventHandler.metadata.id);
+                    ResetTrackable();
+                    currentMetadataId = CloudRecoEventHandler.metadata.id;
+                }
                 OnTrackingFound();
             }
             else
@@ -263,10 +276,11 @@ namespace AssemblyCSharp
         {
             try
             {
-                if (video != null && (video.CurrentState == VideoPlayerHelper.MediaState.PLAYING || video.CurrentState == VideoPlayerHelper.MediaState.NOT_READY))
+                if (video != null && (video.CurrentState == VideoPlayerHelper.MediaState.PLAYING || video.CurrentState == VideoPlayerHelper.MediaState.PLAYING_FULLSCREEN))
                 {
                     //get last position so it can resume after video is unloaded and reloaded.
                     mVideoCurrentPosition = video.VideoPlayer.GetCurrentPosition();
+                    Debug.Log("Paused video at position " + mVideoCurrentPosition);
                     return video.VideoPlayer.Pause();
                 }
             }
@@ -285,17 +299,19 @@ namespace AssemblyCSharp
                 if (video != null && video.VideoPlayer.IsPlayableOnTexture())
                 {
                     VideoPlayerHelper.MediaState state = video.VideoPlayer.GetStatus();
+                    Debug.Log(state);
                     if (state == VideoPlayerHelper.MediaState.PAUSED ||
                         state == VideoPlayerHelper.MediaState.READY ||
                         state == VideoPlayerHelper.MediaState.STOPPED)
                     {
-                        Debug.Log("Video File: " + video.m_path);
-                        return PlayVideo(false, video.VideoPlayer.GetCurrentPosition());
+                        Debug.Log("Resuming video at left position : " + mVideoCurrentPosition);
+                        return PlayVideo(false, mVideoCurrentPosition);
                     }
                     else if (state == VideoPlayerHelper.MediaState.REACHED_END)
                     {
+                        Debug.Log("Resuming video from start.");
                         // Play this video from the beginning
-                        return PlayVideo(false, 0);
+                        // return PlayVideo(false, 0);
                     }
                 }
             }
@@ -312,6 +328,7 @@ namespace AssemblyCSharp
             try
             {
                 SetVolume(mCurrentVolume);
+                Debug.Log("Playing the video seekposition : " + seekPosition);
                 if (video != null && video.VideoPlayer.Play(fullScreen, seekPosition))
                 {
                     return true;
@@ -351,10 +368,19 @@ namespace AssemblyCSharp
 
         #region PRIVATE_METHODS
 
+        private void ResetTrackable()
+        {
+            video.VideoPlayer.Unload();
+            video.SetNotReady();
+            mVideoCurrentPosition = 0;
+            mHasBeenFound = false;
+            isTrackingLost = true;
+            videoFinished = false;
+        }
 
         private void OnTrackingFound()
         {
-			if (CloudRecoEventHandler.metadata["description"].str == "video")
+			if (CloudRecoEventHandler.metadata.type == "video")
             {
                 // videoObject.SetActive(true);
                 threeDObject.SetActive(false);
@@ -390,19 +416,19 @@ namespace AssemblyCSharp
                 {
                     video = GetComponentInChildren<VideoPlaybackBehaviour>();
 
-                    video.m_path = CloudRecoEventHandler.metadata["imagelocation"].str.Replace("\\", "");
+                    video.m_path = CloudRecoEventHandler.metadata.materialurl;
 
-					video.VideoPlayer.SetFilename(CloudRecoEventHandler.metadata["imagelocation"].str.Replace("\\", ""));
-					
-					if (video.VideoPlayer.Load(video.m_path, VideoPlayerHelper.MediaType.ON_TEXTURE, true, mVideoCurrentPosition))
+					video.VideoPlayer.SetFilename(CloudRecoEventHandler.metadata.materialurl);
+
+					if (video.VideoPlayer.Load(video.m_path, VideoPlayerHelper.MediaType.ON_TEXTURE, false, mVideoCurrentPosition))
                     {
-                        //						Debug.Log ("Loaded Video: " + video.m_path + " Video Texture Id: " + video.mVideoTexture.GetNativeTextureID ());
+                        Debug.Log("Loaded video from position : " + mVideoCurrentPosition);
                     }
 
                     ResumeVideo();
                 }
             }
-            else if (CloudRecoEventHandler.metadata["description"].str == "3d")
+            else if (CloudRecoEventHandler.metadata.type == "3d")
             {
 				PauseAndUnloadVideo();
                 threeDObject.SetActive(true);

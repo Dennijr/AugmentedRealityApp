@@ -182,7 +182,7 @@ namespace CustomUI
 
         public void HyperlinkClick()
         {
-            Application.OpenURL(CloudRecoEventHandler.metadata["hyperlink"].str.Replace("\\", ""));
+            Application.OpenURL(CloudRecoEventHandler.metadata.hyperlink);
         }
 
 

@@ -3,6 +3,7 @@ Copyright (c) 2012-2014 Qualcomm Connected Experiences, Inc.
 All Rights Reserved.
 ==============================================================================*/
 
+using CustomUI;
 using System;
 using UnityEngine;
 using Vuforia;
@@ -29,7 +30,7 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
 
 	public static string type;
 
-	public static JSONObject metadata;
+	public static Metadata metadata;
 
     #region EXPOSED_PUBLIC_VARIABLES
 
@@ -132,19 +133,18 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
             return;
         }
 
-		metadata = new JSONObject (targetSearchResult.MetaData);
+		var metadataJson = new JSONObject (targetSearchResult.MetaData);
 
+        metadata = new Metadata(metadataJson);
 
-		Debug.Log("Metadata: " +metadata.Print());
+        Debug.Log("Metadata: " + metadataJson.Print());
         
-		mPath = metadata["imagelocation"].str.Replace("\\", "");
+		mPath = metadata.materialurl;
 		
 		Debug.Log ("Mpath: " + mPath);
-		if (metadata["description"].str.Equals("3d")) {
-			type = "3d";
-		} else {
-			type = "video";
-		}
+
+        type = metadata.type.Equals("3d") ? "3d" : "video";
+
         // First clear all trackables
         mObjectTracker.TargetFinder.ClearTrackables(false);
 
