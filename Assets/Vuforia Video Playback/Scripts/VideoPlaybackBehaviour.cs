@@ -8,6 +8,7 @@ using UnityEngine;
 using Vuforia;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 /// <summary>
 /// The VideoPlaybackBehaviour manages the appearance of a video that can be superimposed on a target.
@@ -46,6 +47,8 @@ public class VideoPlaybackBehaviour : MonoBehaviour
     /// Play video from cloud
     /// </summary>
     public bool isCloudReco = false;
+
+    public event EventHandler OnStartedPlaying;
 
     #endregion // PUBLIC_MEMBER_VARIABLES
 
@@ -505,12 +508,24 @@ public class VideoPlaybackBehaviour : MonoBehaviour
 
     IEnumerator DelayVideoPlayback()
     {
+        // Don't render untill the video starts to play
+        var currentposition = mVideoPlayer.GetCurrentPosition();
+        while (currentposition == mVideoPlayer.GetCurrentPosition())
+            yield return new WaitForEndOfFrame();
+        mVideoPlayer.UpdateVideoData();
+        // Wait for small fraction of seconds to get it rendered
         int numFramesToDelay = (int)(0.1f / Time.fixedDeltaTime);
         for (int i = 0; i < numFramesToDelay; i++)
             yield return null;
-
+        StartCoroutine(StartedPlaying());
         Material mat = GetComponent<Renderer>().material;
         mat.mainTexture = mVideoTexture;
         mat.mainTextureScale = new Vector2(1, 1);
+    }
+
+    IEnumerator StartedPlaying()
+    {
+        yield return null;
+        if (OnStartedPlaying != null) OnStartedPlaying(this, new EventArgs());
     }
 }

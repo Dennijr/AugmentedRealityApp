@@ -64,7 +64,8 @@ namespace AssemblyCSharp
             {
                 if (nowVideoPlaying)
                 {
-                    if (OnVideoPlayHandler != null) OnVideoPlayHandler(this, new EventArgs());
+                    //Call when actually video start to play
+                    //if (OnVideoPlayHandler != null) OnVideoPlayHandler(this, new EventArgs());
                 }
                 else if (videoCurrentState == VideoPlayerHelper.MediaState.REACHED_END)
                 {
@@ -89,9 +90,16 @@ namespace AssemblyCSharp
                 {
                     if (OnTrackingFoundHandler != null) OnTrackingFoundHandler(this, new EventArgs());
                 }
-                if (!nowVideoPlaying && !mLostTracking && !videoFinished && CloudRecoEventHandler.metadata.type == "video")
+                if (!nowVideoPlaying && !mLostTracking && CloudRecoEventHandler.metadata.type == "video")
                 {
-                    if (OnVideoLoadHandler != null) OnVideoLoadHandler(this, new EventArgs());
+                    if (!videoFinished)
+                    {
+                        if (OnVideoLoadHandler != null) OnVideoLoadHandler(this, new EventArgs());
+                    }
+                    else
+                    {
+                        if (OnVideoFinishHandler != null) OnVideoFinishHandler(this, new EventArgs());
+                    }
                 }
             }
             else if (videoCurrentState == VideoPlayerHelper.MediaState.ERROR)
@@ -120,6 +128,9 @@ namespace AssemblyCSharp
             }
 
             video = GetComponentInChildren<VideoPlaybackBehaviour>();
+
+            if (video != null)
+                video.OnStartedPlaying += ((s, e) => { if (OnVideoPlayHandler != null) OnVideoPlayHandler(s, e); });
 
             OnTrackingLost();
         }
@@ -358,6 +369,20 @@ namespace AssemblyCSharp
             catch (Exception any)
             {
                 Debug.Log("Error with pause and unload video : " + any.Message);
+            }
+            return false;
+        }
+
+        public bool PlayAgain()
+        {
+            try
+            {
+                videoFinished = false;
+                PlayVideo(false, 0);
+            }
+            catch (Exception any)
+            {
+                Debug.Log("Error when playing video again : " + any.Message);
             }
             return false;
         }
