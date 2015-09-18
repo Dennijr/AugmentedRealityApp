@@ -17,7 +17,9 @@ namespace CustomUI
         public Button EmailButton;
 
 		public Button LikeButton;
+        public Text LikeCount;
 		public Button CommentButton;
+        public Text CommentCount;
 
 		public GameObject CommentPopup;
 		public InputField CommentInput;
@@ -153,7 +155,7 @@ namespace CustomUI
             if (www != null)
             {
                 LikeButton.transform.Find("Image").GetComponent<ImageToggle>().SetSprite(false);
-                SetCount(LikeButton.transform.Find("Text").GetComponent<Text>(), ++likecount);
+                SetCount(LikeCount, ++likecount);
             }
 		}
 
@@ -167,7 +169,7 @@ namespace CustomUI
             {
                 CommentInput.text = "";
                 commentController.AddComment(comment);
-                SetCount(CommentButton.transform.Find("Text").GetComponent<Text>(), ++likecount);
+                SetCount(CommentCount, ++likecount);
             }
 		}
 
