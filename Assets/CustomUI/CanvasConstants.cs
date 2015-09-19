@@ -34,6 +34,8 @@ namespace CustomUI
 	    private static RectTransform canvasRect;
 		[HideInInspector]
         public static string serverURL = @"http://studio.activatear.com/services/whatsnew.php";
+		[HideInInspector]
+		public static string userServerURL = @"http://studio.activatear.com/services/users.php";
         //public static string serverURL = @"http://10.234.1.216/activatear/services/whatsnew.php";
 
 	    // Use this for initialization

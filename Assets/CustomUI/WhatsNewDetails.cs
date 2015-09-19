@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using Soomla.Profile;
 
 namespace CustomUI
 {
@@ -22,12 +23,13 @@ namespace CustomUI
         public Text CommentCount;
 
 		public GameObject CommentPopup;
+		public GameObject SharePopup;
 		public InputField CommentInput;
 
         private WhatsNewCommentController commentController;
 
         private int id, likecount, commentcount;
-        private string title, description, videoLink, shareLink, readMoreLink;
+        private string title, description, videoLink, shareLink, readMoreLink, imageURL;
 
 		public void Start()
         {
@@ -40,7 +42,7 @@ namespace CustomUI
 			});
 
 			ShareButton.onClick.AddListener (delegate {
-				AppSocial.ShareToFacebook();
+				ShowSharePopup();
 			});
 
             EmailButton.onClick.AddListener(() => PushEmail());
@@ -52,12 +54,53 @@ namespace CustomUI
 			ScanButton.onClick.AddListener(() => { CanvasConstants.Navigate("Scan"); });
 		}
 
+		private static IEnumerator PostUserToServer(UserProfile userProfile)
+		{
+			Debug.Log ("Posting data: ");
+			string url = string.Format (CanvasConstants.userServerURL + "?request=adduser&provider={0}&provider_user_id={1}&name={2}&email={3}", userProfile.Provider, userProfile.ProfileId, userProfile.FirstName, userProfile.Email);
+			Debug.Log("Posting user data: " + url );
+			WWW www = new WWW (url);
+			yield return www;
+		}
+
+		public void UpadateStory ()
+		{
+			Debug.Log ("Share button clicked. Login status: " + SoomlaProfile.IsLoggedIn (Provider.FACEBOOK));
+			if (!SoomlaProfile.IsLoggedIn (Provider.FACEBOOK)) {
+				SoomlaProfile.Login (Provider.FACEBOOK);
+				ProfileEvents.OnLoginFinished += (UserProfile userProfile, bool autologin, string payload) =>  {
+					//Your code to execute here
+					Debug.Log ("onloginfinished Logged into " + userProfile.Provider + " username: " + userProfile.FirstName);
+					StartCoroutine (PostUserToServer (userProfile));
+				};
+			}
+			SoomlaProfile.UpdateStory (Provider.FACEBOOK, title, title, title, description, readMoreLink, imageURL, "", null);
+			CloseSharePopup();
+		}
+
+		public void UpadateTwitterStory ()
+		{
+			Debug.Log ("Share button clicked. Login status: " + SoomlaProfile.IsLoggedIn (Provider.TWITTER));
+			if (!SoomlaProfile.IsLoggedIn (Provider.TWITTER)) {
+				SoomlaProfile.Login (Provider.TWITTER);
+				ProfileEvents.OnLoginFinished += (UserProfile userProfile, bool autologin, string payload) =>  {
+					//Your code to execute here
+					Debug.Log ("onloginfinished Logged into " + userProfile.Provider + " username: " + userProfile.FirstName);
+					StartCoroutine (PostUserToServer (userProfile));
+				};
+			}
+			SoomlaProfile.UpdateStory (Provider.TWITTER, title, title, title, description, readMoreLink, imageURL, "", null);
+			CloseSharePopup();
+		}
+
+		
 		void OnGUI()
 		{
 			if(CommentInput.isFocused && CommentInput.text != "" && Input.GetKey(KeyCode.Return)) {
 				PostComment();
 			}
 		}
+
 
 		public void ShowCommentPopup()
 		{
@@ -67,6 +110,15 @@ namespace CustomUI
 			Enable (CommentPopup);
 			if (commentController != null)
 				commentController.LoadWhatsNewComments (id);
+		}
+
+		public void ShowSharePopup()
+		{
+			if (SharePopup == null)
+				return;
+
+			Enable (SharePopup);
+
 		}
 
         public bool CanNavigateBack()
@@ -85,6 +137,12 @@ namespace CustomUI
             Disable(CommentPopup, false);
         }
 
+		public void CloseSharePopup()
+		{
+			CanvasConstants.ShowLoading(false);
+			Disable(SharePopup, false);
+		}
+		
 		public void PostComment()
 		{
 			var comment = CommentInput.text;
@@ -150,7 +208,7 @@ namespace CustomUI
 
 		private IEnumerator PostLike()
 		{
-			WWW www = new WWW (CanvasConstants.serverURL + "?request=like&id=" + id);
+			WWW www = new WWW (CanvasConstants.serverURL + "?request=like&id=" + id );
 			yield return www;
             if (www != null)
             {
@@ -206,6 +264,7 @@ namespace CustomUI
             videoLink = source.videoURL;
             readMoreLink = source.linkURL;
 
+
             // set Main image at the top
             if (!string.IsNullOrEmpty(source.backgroundImageURL))
             {
@@ -227,6 +286,7 @@ namespace CustomUI
             // If details image doesn't exitst delete the game object
             if (!string.IsNullOrEmpty(source.imageURL))
             {
+				imageURL= source.imageURL;
                 StartCoroutine(LoadImage(false, source.imageURL));
             }
             else
