@@ -12,14 +12,37 @@ namespace CustomUI
     public class WhatsNewListSource : IBaseListSource
     {
 		public int id;
-		public int categoryId;
+        public int likescount;
+        public int commentscount;
+        public bool liked;
         public string title;
         public string description;
 		public string imageURL;
 		public string backgroundImageURL;
 		public string videoURL;
 		public string linkURL;
-		public DateTime createdTimeStamp;
-		public DateTime lastModifiedTimeStamp;
+
+        public WhatsNewListSource() { }
+
+        public WhatsNewListSource(JSONObject whatsnew)
+        {
+            try
+            {
+                this.id = Utils.GetInt(whatsnew["id"]);
+                this.likescount = Utils.GetInt(whatsnew["likescount"]);
+                this.commentscount = Utils.GetInt(whatsnew["commentscount"]);
+                this.liked = Utils.GetInt(whatsnew["liked"]) > 0;
+                this.title = whatsnew["title"].str;
+                this.description = whatsnew["description"].str;
+                this.imageURL = whatsnew["imageurl"].str.Replace("\\", "");
+                this.backgroundImageURL = whatsnew["backgroundimageurl"].str.Replace("\\", "");
+                this.videoURL = whatsnew["videourl"].str.Replace("\\", "");
+                this.linkURL = whatsnew["linkurl"].str.Replace("\\", "");
+            }
+            catch (Exception any)
+            {
+                Debug.Log("Whats new item parse error : " + any.Message);
+            }
+        }
     }
 }

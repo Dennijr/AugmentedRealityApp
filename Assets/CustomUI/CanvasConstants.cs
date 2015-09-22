@@ -32,11 +32,13 @@ namespace CustomUI
 	    public static float canvasHeight;
 
 	    private static RectTransform canvasRect;
+
+        private static string SURL = @"http://192.168.24.1/activatear/services/";
+        //private static string SURL = @"http://studio.activatear.com/services/";
 		[HideInInspector]
-        public static string serverURL = @"http://studio.activatear.com/services/whatsnew.php";
+        public static string WhatsNewSURL = SURL + "whatsnew.php";
 		[HideInInspector]
-		public static string userServerURL = @"http://studio.activatear.com/services/users.php";
-        //public static string serverURL = @"http://10.234.1.216/activatear/services/whatsnew.php";
+		public static string UserSURL = SURL + "users.php";
 
 	    // Use this for initialization
 	    void Start()
@@ -116,29 +118,5 @@ namespace CustomUI
 
 		
 		}
-
-		public static DateTime UnixTimeStampToDateTime( double unixTimeStamp )
-		{
-			// Unix timestamp is seconds past epoch
-			DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0,DateTimeKind.Utc);
-			dtDateTime = dtDateTime.AddSeconds( unixTimeStamp ).ToLocalTime();
-			return dtDateTime;
-		}
-
-	    public static Color HexToColor(string hex)
-	    {
-	        hex = hex.Replace("0x", "");//in case the string is formatted 0xFFFFFF
-	        hex = hex.Replace("#", "");//in case the string is formatted #FFFFFF
-	        byte a = 255;//assume fully visible unless specified in hex
-	        byte r = byte.Parse(hex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
-	        byte g = byte.Parse(hex.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);
-	        byte b = byte.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
-	        //Only use alpha if the string has enough characters
-	        if (hex.Length == 8)
-	        {
-	            a = byte.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
-	        }
-	        return new Color32(r, g, b, a);
-	    }
 	}
 }

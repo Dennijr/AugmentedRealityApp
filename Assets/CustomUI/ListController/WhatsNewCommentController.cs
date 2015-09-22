@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 namespace CustomUI
 {
@@ -9,54 +10,42 @@ namespace CustomUI
 		private bool loaded = false;
         private int whatsNewId;
 
-		public void LoadWhatsNewComments(int whatsNewId) 
+		public void LoadWhatsNewComments(int id) 
 		{
-			if (!loaded)
-				StartCoroutine(GetAllWhatsNewComments(whatsNewId));
+			if (!loaded) {
+                whatsNewId = id;
+                var url = CanvasConstants.WhatsNewSURL + "?request=getcomment&id=" + whatsNewId;
+                StartCoroutine(Utils.PostRequest(url, true, false, HandleCommentsResponse));
+            }
 		}
 
-        public void AddComment(string text)
+        public void AddComment(JSONObject obj)
         {
-            var comment = new WhatsNewCommentSource();
-            comment.id = 0;
-            comment.whatsnewid = whatsNewId;
-            comment.comment = text;
+            var comment = new WhatsNewCommentSource(obj);
             source.Add(comment);
             AddItem(comment);
+            ListContentChanged();
         }
 
-		private IEnumerator GetAllWhatsNewComments (int whatsNewId)
-		{
-            this.whatsNewId = whatsNewId;
-			WWW www = new WWW (CanvasConstants.serverURL + "?request=getcomment&id=" + whatsNewId);
-            CanvasConstants.ShowLoading(true);
-			yield return www;
-            CanvasConstants.ShowLoading(false);
-
-			Debug.Log ("Response: " + www.text);
-			if (www.text != null) {
-				var response = new JSONObject (www.text).list;
-				foreach (JSONObject comment in response) {
-					try {
-						var item = new WhatsNewCommentSource ();
-						int id = 0;
-						int.TryParse (comment ["id"].str, out id);
-						item.id = id;
-						item.comment = comment["comment"].str;
-						item.whatsnewid = whatsNewId;
-						item.createdby = comment["created_by"].str;
-						double createdTimeStamp;
-						if (double.TryParse (comment ["createdtimestamp"].str, out createdTimeStamp))
-							item.createdTimeStamp = CanvasConstants.UnixTimeStampToDateTime (createdTimeStamp);
-						source.Add (item);
-					} catch (System.Exception e) {
-						Debug.Log ("Exception: " + e.ToString ());
-					}
-				}
-			}
-			AddItems (source);
+        private void HandleCommentsResponse(object sender, EventArgs e)
+        {
+            if (sender != null)
+            {
+                var www = sender as WWW;
+                var response = new JSONObject(www.text);
+                if (response != null && response.Count > 0)
+                {
+                    var comments = response.list;
+                    foreach (var comment in comments)
+                    {
+                        var item = new WhatsNewCommentSource(comment);
+                        source.Add(item);
+                    }
+                }
+            }
+            AddItems(source);
             ListContentChanged();
-			loaded = true;
-		}
+            loaded = true;
+        }
 	}
 }

@@ -85,7 +85,8 @@ namespace CustomUI
                 // Activate the prefab with fading animation
                 whatsNewDetails = detailsObject.GetComponent<WhatsNewDetails>();
                 whatsNewDetails.Enable();
-				whatsNewDetails.LoadContent (contentsource);
+                whatsNewDetails.SetSource(contentsource);
+				whatsNewDetails.LoadContent();
 			}
         }
 

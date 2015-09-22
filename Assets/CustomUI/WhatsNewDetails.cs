@@ -7,6 +7,8 @@ namespace CustomUI
 {
     public class WhatsNewDetails : MonoBehaviour
     {
+        private WhatsNewListSource detailsSource;
+
         public RawImage MainImage;
         public RawImage DetailsImage;
         public Text Title;
@@ -28,17 +30,14 @@ namespace CustomUI
 
         private WhatsNewCommentController commentController;
 
-        private int id, likecount, commentcount;
-        private string title, description, videoLink, shareLink, readMoreLink, imageURL;
-
 		public void Start()
         {
 			VideoButton.onClick.AddListener(delegate {
-				if (!string.IsNullOrEmpty(videoLink)) OpenURL(videoLink);
+                if (!string.IsNullOrEmpty(detailsSource.videoURL)) OpenURL(detailsSource.videoURL);
 			});
 
 			ReadMoreButton.onClick.AddListener (delegate {
-                if (!string.IsNullOrEmpty(readMoreLink)) OpenURL(readMoreLink);
+                if (!string.IsNullOrEmpty(detailsSource.linkURL)) OpenURL(detailsSource.linkURL);
 			});
 
 			ShareButton.onClick.AddListener (delegate {
@@ -54,16 +53,21 @@ namespace CustomUI
 			ScanButton.onClick.AddListener(() => { CanvasConstants.Navigate("Scan"); });
 		}
 
+        public void SetSource(WhatsNewListSource source)
+        {
+            this.detailsSource = source;
+        }
+
 		private static IEnumerator PostUserToServer(UserProfile userProfile)
 		{
 			Debug.Log ("Posting data: ");
-			string url = string.Format (CanvasConstants.userServerURL + "?request=adduser&provider={0}&provider_user_id={1}&name={2}&email={3}", userProfile.Provider, userProfile.ProfileId, userProfile.FirstName, userProfile.Email);
+			string url = string.Format (CanvasConstants.UserSURL + "?request=adduser&provider={0}&provider_user_id={1}&name={2}&email={3}", userProfile.Provider, userProfile.ProfileId, userProfile.FirstName, userProfile.Email);
 			Debug.Log("Posting user data: " + url );
 			WWW www = new WWW (url);
 			yield return www;
 		}
 
-		public void UpadateStory ()
+		public void UpdateStory ()
 		{
 			Debug.Log ("Share button clicked. Login status: " + SoomlaProfile.IsLoggedIn (Provider.FACEBOOK));
 			if (!SoomlaProfile.IsLoggedIn (Provider.FACEBOOK)) {
@@ -74,11 +78,11 @@ namespace CustomUI
 					StartCoroutine (PostUserToServer (userProfile));
 				};
 			}
-			SoomlaProfile.UpdateStory (Provider.FACEBOOK, title, title, title, description, readMoreLink, imageURL, "", null);
+            SoomlaProfile.UpdateStory(Provider.FACEBOOK, detailsSource.title, detailsSource.title, detailsSource.title, detailsSource.description, detailsSource.linkURL, detailsSource.imageURL, "", null);
 			CloseSharePopup();
 		}
 
-		public void UpadateTwitterStory ()
+		public void UpdateTwitterStory ()
 		{
 			Debug.Log ("Share button clicked. Login status: " + SoomlaProfile.IsLoggedIn (Provider.TWITTER));
 			if (!SoomlaProfile.IsLoggedIn (Provider.TWITTER)) {
@@ -89,15 +93,17 @@ namespace CustomUI
 					StartCoroutine (PostUserToServer (userProfile));
 				};
 			}
-			SoomlaProfile.UpdateStory (Provider.TWITTER, title, title, title, description, readMoreLink, imageURL, "", null);
+            SoomlaProfile.UpdateStory(Provider.TWITTER, detailsSource.title, detailsSource.title, detailsSource.title, detailsSource.description, detailsSource.linkURL, detailsSource.imageURL, "", null);
 			CloseSharePopup();
 		}
 
 		
 		void OnGUI()
 		{
-			if(CommentInput.isFocused && CommentInput.text != "" && Input.GetKey(KeyCode.Return)) {
-				PostComment();
+			if (CommentInput.isFocused && CommentInput.text != "" && Input.GetKey(KeyCode.Return)) {
+                var comment = CommentInput.text;
+                CommentInput.text = "";
+                PostComment(comment);
 			}
 		}
 
@@ -109,16 +115,14 @@ namespace CustomUI
 			commentController = CommentPopup.GetComponent<WhatsNewCommentController>();
 			Enable (CommentPopup);
 			if (commentController != null)
-				commentController.LoadWhatsNewComments (id);
+				commentController.LoadWhatsNewComments(detailsSource.id);
 		}
 
 		public void ShowSharePopup()
 		{
 			if (SharePopup == null)
 				return;
-
 			Enable (SharePopup);
-
 		}
 
         public bool CanNavigateBack()
@@ -139,16 +143,7 @@ namespace CustomUI
 
 		public void CloseSharePopup()
 		{
-			CanvasConstants.ShowLoading(false);
 			Disable(SharePopup, false);
-		}
-		
-		public void PostComment()
-		{
-			var comment = CommentInput.text;
-			if (!string.IsNullOrEmpty (comment)) {
-				StartCoroutine(PostCommentToServer(comment));
-			}
 		}
 
         public void Enable(GameObject gObject = null)
@@ -202,34 +197,35 @@ namespace CustomUI
 
         private void PushEmail()
         {
-            if (!string.IsNullOrEmpty(title) && !string.IsNullOrEmpty(description))
-                AppSocial.SendEmail(title, description);
+            if (!string.IsNullOrEmpty(detailsSource.title) && !string.IsNullOrEmpty(detailsSource.description))
+                AppSocial.SendEmail(detailsSource.title, detailsSource.description);
         }
 
-		private IEnumerator PostLike()
-		{
-			WWW www = new WWW (CanvasConstants.serverURL + "?request=like&id=" + id );
-			yield return www;
-            if (www != null)
+        public void PostComment(string comment)
+        {
+            if (!string.IsNullOrEmpty(comment))
             {
-                LikeButton.transform.Find("Image").GetComponent<ImageToggle>().SetSprite(false);
-                SetCount(LikeCount, ++likecount);
+                string url = CanvasConstants.WhatsNewSURL + "?request=comment&id=" + detailsSource.id + "&comment=" + WWW.EscapeURL(comment);
+                StartCoroutine(Utils.PostRequest(url, true, true, HandleCommentResponse));
             }
-		}
+        }
 
-		private IEnumerator PostCommentToServer(string comment)
-		{
-			string url = CanvasConstants.serverURL + "?request=comment&id=" + id + "&comment=" + WWW.EscapeURL(comment);
-			Debug.Log("Posting comment: " +url );
-			WWW www = new WWW (url);
-			yield return www;
-            if (www != null)
+        private void HandleCommentResponse(object sender, System.EventArgs e)
+        {
+            if (sender != null)
             {
-                CommentInput.text = "";
-                commentController.AddComment(comment);
-                SetCount(CommentCount, ++likecount);
+                var www = sender as WWW;
+                var response = new JSONObject(www.text);
+                if (response != null)
+                {
+                    CommentInput.text = "";
+                    CommentInput.transform.Find("DisplayText").GetComponent<Text>().text = "";
+                    detailsSource.commentscount = Utils.GetInt(response["count"]);
+                    commentController.AddComment(response["comment"]);
+                    SetCount(CommentCount, detailsSource.commentscount);
+                }
             }
-		}
+        }
 
         private void SetCount(Text text, int count)
         {
@@ -248,34 +244,49 @@ namespace CustomUI
 
 		private void Like ()
 		{
-			StartCoroutine (PostLike());
+            if (detailsSource.liked) return;
+            var url = CanvasConstants.WhatsNewSURL + "?request=like&id=" + detailsSource.id;
+			StartCoroutine(Utils.PostRequest(url, true, true, HandleLikeResponse));
 		}
+
+        private void HandleLikeResponse(object sender, System.EventArgs e)
+        {
+            if (sender != null)
+            {
+                var www = sender as WWW;
+                var response = new JSONObject(www.text);
+                if (response != null)
+                {
+                    detailsSource.likescount = Utils.GetInt(response);
+                    detailsSource.liked = true;
+                    LikeButton.transform.Find("Image").GetComponent<ImageToggle>().SetSprite(false);
+                    SetCount(LikeCount, detailsSource.likescount);
+                }
+            }
+        }
 		
 		void OpenURL(string link)
 		{
 			Application.OpenURL(link);
 		}
 
-        public void LoadContent(WhatsNewListSource source)
+        public void LoadContent()
         {
-			id = source.id;
-            title = source.title;
-            description = source.description;
-            videoLink = source.videoURL;
-            readMoreLink = source.linkURL;
-
+            SetCount(LikeCount, detailsSource.likescount);
+            SetCount(CommentCount, detailsSource.commentscount);
+            LikeButton.transform.Find("Image").GetComponent<ImageToggle>().SetSprite(!detailsSource.liked);
 
             // set Main image at the top
-            if (!string.IsNullOrEmpty(source.backgroundImageURL))
+            if (!string.IsNullOrEmpty(detailsSource.backgroundImageURL))
             {
-                StartCoroutine(LoadImage(true, source.backgroundImageURL));
+                StartCoroutine(LoadImage(true, detailsSource.backgroundImageURL));
             }
             // Set title
-            if (!string.IsNullOrEmpty(title)) Title.text = title;
+            if (!string.IsNullOrEmpty(detailsSource.title)) Title.text = detailsSource.title;
             // Set description
-            if (!string.IsNullOrEmpty(description)) Description.text = description;
+            if (!string.IsNullOrEmpty(detailsSource.description)) Description.text = detailsSource.description;
             // If video url doesn't exists, delete the game object
-            if (string.IsNullOrEmpty(videoLink))
+            if (string.IsNullOrEmpty(detailsSource.videoURL))
             {
                 try
                 {
@@ -284,10 +295,9 @@ namespace CustomUI
                 catch { }
             }
             // If details image doesn't exitst delete the game object
-            if (!string.IsNullOrEmpty(source.imageURL))
+            if (!string.IsNullOrEmpty(detailsSource.imageURL))
             {
-				imageURL= source.imageURL;
-                StartCoroutine(LoadImage(false, source.imageURL));
+                StartCoroutine(LoadImage(false, detailsSource.imageURL));
             }
             else
             {
@@ -298,7 +308,7 @@ namespace CustomUI
                 catch { }
             }
             // If read more link not present remove the object
-            if (string.IsNullOrEmpty(readMoreLink))
+            if (string.IsNullOrEmpty(detailsSource.linkURL))
             {
                 Destroy(ReadMoreButton.gameObject);
             }

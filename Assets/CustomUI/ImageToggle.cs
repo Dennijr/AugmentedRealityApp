@@ -12,20 +12,28 @@ namespace CustomUI
 
         void Start()
         {
+            init();
+        }
+
+        bool init()
+        {
+            if (thisImage != null && OriginalImage != null)
+                return true;
             thisImage = gameObject.GetComponent<Image>();
             if (thisImage != null)
                 OriginalImage = thisImage.sprite;
+            return (thisImage != null && OriginalImage != null);
         }
 
         public void ToggleSprite()
         {
-            if (thisImage != null)
+            if (init())
                 SetSprite(thisImage.sprite != OriginalImage);
         }
 
         public void SetSprite(bool setOriginal)
         {
-            if (thisImage != null)
+            if (init())
                 thisImage.sprite = setOriginal ? OriginalImage : ToggleImage;
         }
     }

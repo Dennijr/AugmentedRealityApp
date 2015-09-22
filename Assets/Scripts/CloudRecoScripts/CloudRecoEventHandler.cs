@@ -30,7 +30,7 @@ public class CloudRecoEventHandler : MonoBehaviour, ICloudRecoEventHandler
 
 	public static string type;
 
-	public static Metadata metadata;
+    public static Metadata metadata = new Metadata();
 
     #region EXPOSED_PUBLIC_VARIABLES
 
