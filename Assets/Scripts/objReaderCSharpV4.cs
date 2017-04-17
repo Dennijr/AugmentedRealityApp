@@ -171,7 +171,7 @@ class objReaderCSharpV4 : MonoBehaviour {
 		
 		
 		//disassemble the obj to a non-indexed format and assemble them back to an indexed format, but only by vertex
-		ArrayList tempArrayList = new ArrayList();
+		/*ArrayList tempArrayList = new ArrayList();
 		for (int i = 0; i < _facesVertNormUV.Count; ++i) {
 			if (_facesVertNormUV[i] != null) {
 				PlacesByIndex indextemp = new PlacesByIndex(i);
@@ -190,7 +190,19 @@ class objReaderCSharpV4 : MonoBehaviour {
 				}
 				tempArrayList.Add(indextemp);
 			}
-		}
+		}*/
+		Dictionary<string, PlacesByIndex> tempArrayList = new Dictionary<string, PlacesByIndex>();
+		for(int i = 0; i < _facesVertNormUV.Count; ++i)
+		{
+			Vector3 iTemp = (Vector3)_facesVertNormUV[i];
+			string key = iTemp.x + "/" + iTemp.y;// + "/" + iTemp.z; //z axis needed? cant tell the difference, adding it seems to have a minimal perf hit
+			if(!tempArrayList.ContainsKey(key))
+			{
+			    tempArrayList.Add(key, new PlacesByIndex(i));
+			}
+			tempArrayList[key].Add(i);
+		}		
+		
 		//init the arrays
 		_vertexArray = new Vector3[tempArrayList.Count];
 		_uvArray = new Vector2[tempArrayList.Count];
